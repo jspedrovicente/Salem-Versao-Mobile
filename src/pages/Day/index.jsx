@@ -61,11 +61,6 @@ const Day = () => {
     const [players, setPlayers] = useState([]);
     const [alivePlayers, setAlivePlayers] = useState([]);
     const [deadPlayers, setDeadPlayers] = useState([]);
-    const [townies, setTownies] = useState([]);
-    const [mafiaies, setMafiaies] = useState([]);
-    const [covenies, setCovenies] = useState([]);
-    const [neutraies, setNeutraies] = useState([]);
-    const [horsies, setHorsies] = useState([]);
     const [townRole, setTownRole] = useState([]);
     const [covenRole, setCovenRole] = useState([]);
     const [horsemenRole, setHorsemenRole] = useState([]);
@@ -79,21 +74,7 @@ const Day = () => {
     const [playerKilling, setPlayerKilling] = useState('');
     const [playerKilling2, setPlayerKilling2] = useState('');
     const [killAnouncementUpdate, setKillAnouncementUpdate] = useState('');
-    
-    
-
-
-    // Night actions that transfers to morning
     const [visitAction, setVisitAction] = useState([]);
-    const [executorAction, setExecutorAction] = useState([]);
-    const [poisonAction, setPoisonAction] = useState([]);
-    const [armadilheiroInformation, setArmadilheiroInformation] = useState([]);
-    const [spyInformation, setSpyInformation] = useState([]);
-    const [fuxiqueiraInformation, setFuxiqueiraInformation] = useState([]);
-    const [padeiraHealCount, setPadeiraHealCount] = useState(0)
-    const [arsonTarget, setArsonTarget] = useState([]);
-    const [statusAfliction, setStatusAfliction] = useState([]);
-    const [parasiteTarget, setParasiteTarget] = useState([]);
     
     useEffect(() => {
         const loadUserInformation = () => {
@@ -101,12 +82,10 @@ const Day = () => {
             setUser(JSON.parse(userDetail));
             const data = JSON.parse(userDetail);
         }
-    
-        
         loadUserInformation();
     }, [])
     useEffect(() => {
-        const loadPlayers = async () => {
+        const loadPlayers = () => {
             const x = onSnapshot(collection(database, `playeradmin/players/${user.email}`), (snapshot) => {
                 let list = [];
                 snapshot.forEach((doc) => {
@@ -134,85 +113,8 @@ const Day = () => {
                 setPlayers(list);
                 setAlivePlayers(list.sort((a, b) => a.wakeOrder - b.wakeOrder).filter(player => player.life.includes("alive")))
                 setDeadPlayers(list.sort((a, b) => a.wakeOrder - b.wakeOrder).filter(player => player.life.includes("dead")))
-                setTownies(list.filter(player => player.filliation === 'town' && player.life === "alive"))
-                setCovenies(list.filter(player => player.filliation === 'coven' && player.life === "alive"))
-                setMafiaies(list.filter(player => player.filliation === 'the family' && player.life === "alive"))
-                setNeutraies(list.filter(player => player.filliation === 'neutral' && player.life === "alive"))
-                setHorsies(list.filter(player => player.filliation === 'horsemen' && player.life === "alive"))
             })
-            const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "town",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-                    })
-                })
-                setTownRole(roles)
-    
-            })
-            const mafiaSnapshot = onSnapshot(collection(database, "gamedata/roles/the family"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "the family",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-    
-                    })
-                })
-                setMafiaRole(roles);
-            })
-            const covenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "coven",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-    
-                    })
-                })
-                setCovenRole(roles);
-                
-            })
-            const horsemenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "horsemen",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-    
-                    })
-                })
-                setHorsemenRole(roles);
-                
-            })
-            const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "neutral",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-    
-                    })
-                })
-                setNeutralRole(roles);
-                
-            })
+           
              const dayCounterSnapshot = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/dayCounter/dayCounter`), (snapshot) => {
                 let currentDayx = [];
                 snapshot.forEach((doc) => {
@@ -223,7 +125,7 @@ const Day = () => {
         }
     
         loadPlayers();
-    }, [user.email]);
+    }, [user]);
     useEffect(() => {
     
         function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole) {
@@ -232,65 +134,83 @@ const Day = () => {
         }
         addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole);
     }, [covenRole])
+    useEffect(() => {
+        const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "town",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+                })
+            })
+            setTownRole(roles)
 
+        })
+        const mafiaSnapshot = onSnapshot(collection(database, "gamedata/roles/the family"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "the family",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+
+                })
+            })
+            setMafiaRole(roles);
+        })
+        const covenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "coven",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+
+                })
+            })
+            setCovenRole(roles);
+            
+        })
+        const horsemenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "horsemen",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+
+                })
+            })
+            setHorsemenRole(roles);
+            
+        })
+        const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "neutral",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+
+                })
+            })
+            setNeutralRole(roles);
+            
+        })
+    }, [])
     useEffect(() => {
         const importData = () => {
-            const aflictionData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/statusAfliction/statusAfliction`), (snapshot) => {
-                let temp = [];
-                snapshot.forEach((doc) => {
-                    temp.push({ target: doc.data().target, status: doc.data().status, key: doc.id, id: doc.id });
-                })
-                setStatusAfliction(temp)
-            })
-            const executorData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/executorTarget/executorTarget`), (snapshot) => {
-                let temp = [];
-                snapshot.forEach((doc) => {
-                    temp.push({ target: doc.data().target, key: doc.id, id: doc.id });
-                })
-                setExecutorAction(temp)
-            })
-            const arsonData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/arsonTarget/arsonTarget`), (snapshot) => {
-                let temp = [];
-                snapshot.forEach((doc) => {
-                    temp.push({ target: doc.data().playerName, key: doc.id, id: doc.id });
-                })
-                setArsonTarget(temp)
-            })
-            const armadilheiroData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/armadilheiroInformation/armadilheiroInformation`), (snapshot) => {
-                let he = [];
-                snapshot.forEach((doc) => {
-                    he.push({ role: doc.data().role, key: doc.id, id: doc.id });
-                })
-                setArmadilheiroInformation(he)
-            })
-            const spyData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/spyInformation/spyInformation`), (snapshot) => {
-                let her = [];
-                snapshot.forEach((doc) => {
-                    her.push({ visited: doc.data().visited, key: doc.id, id: doc.id });
-                })
-                setSpyInformation(her)
-            })
-            const fuxiqueiraData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/fuxiqueiraInformation/fuxiqueiraInformation`), (snapshot) => {
-                let ter = [];
-                snapshot.forEach((doc) => {
-                    ter.push({ visited: doc.data().visited, key: doc.id, id: doc.id });
-                })
-                setFuxiqueiraInformation(ter)
-            })
-            const poisonData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/poisonTarget/poisonTarget`), (snapshot) => {
-                let her = [];
-                snapshot.forEach((doc) => {
-                    her.push({ target: doc.data().visited, key: doc.id, id: doc.id });
-                })
-                setPoisonAction(her)
-            })
-            const parasiteData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/parasiteTarget/parasiteTarget`), (snapshot) => {
-                let her = [];
-                snapshot.forEach((doc) => {
-                    her.push({ target: doc.data().playername, key: doc.id, id: doc.id });
-                })
-                setParasiteTarget(her)
-            })
             const visitData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/visitAction/visitAction`), (snapshot) => {
                 let temp = [];
                 snapshot.forEach((doc) => {
@@ -335,53 +255,16 @@ const Day = () => {
         updateDoc(doc(database, "playeradmin", "blackout", user.email, 'blackout'), { blackout: 'false' })
         updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "inicio"})
 
-        for (let p = 0; p < statusAfliction.length; p++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/statusAfliction/statusAfliction`, statusAfliction[p].id)
-            await deleteDoc(theRef)
-
-        }
-        for (let i = 0; i < allPublicEvents.length; i++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/publicEvents/publicEvents`, allPublicEvents[i].id)
-            await deleteDoc(theRef)
-
-        }
-        for (let i = 0; i < announcements.length; i++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/announcements/announcements`, announcements[i].id)
-            await deleteDoc(theRef)
-
-        }
-        // for (let i = 0; i < deadPlayers.length; i++) {
-        //     await updateDoc(doc(database, "playeradmin", "players", user.email, deadPlayers[i].id), { life: "none", filliation: "none", role: "none" })
-
-        // }
-        for (let i = 0; i < executorAction.length; i++) {
-            await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "executorTarget", "executorTarget", "executorTarget"), { target: '' })
-
-        }
-        for (let i = 0; i < arsonTarget.length; i++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/arsonTarget/arsonTarget`, arsonTarget[i].id)
-            await deleteDoc(theRef)
-
-        }
-        
         clearNeedlessData();
         stopDayMusic();
         stopDramaticDeathMusic();
 
-
-        // Limpando o NewResponse, o buff e o Debuff
+        // Limpando o todos status effects
         for (let i = 0; i < players.length; i++){
             updateDoc(doc(database, `playeradmin/players/${user.email}/${players[i].id}`), { newResponse: "", buff: "", debuff: "", clownBomb: false, pistoleiroMark: false, doused: false, executorTarget: false });
         }
         await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "dayCounter", "dayCounter", "dayCounter"), { currentDay: 1 })
-        await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "padeiraHeals", "padeiraHeals", "padeiraHeals"), { healCountMax: 4 });
-        await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "weaponChoice", "weaponChoice", "weaponChoice"), { weapon: "none" });
-        await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "conselheiraCounter", "conselheiraCounter", "conselheiraCounter"), { counter: 2 });
-        await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "investigatorCounter", "investigatorCounter", "investigatorCounter"), { counter: 2 });
-        await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "zeladorCounter", "zeladorCounter", "zeladorCounter"), { counter: 2 });
-        await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "veteranCounter", "veteranCounter", "veteranCounter"), { counter: 2 });
-        
-        navigateToNight('/playerlist')
+        navigateToNight('/playerrole')
     }
     const clearNeedlessData = () => {
         // clears visitAction
@@ -389,28 +272,6 @@ const Day = () => {
             const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/visitAction/visitAction`, visitAction[p].id)
             deleteDoc(theRef);
         }
-        // clears bomb, marks, motivations and parasites.
-        const bombClear = statusAfliction.filter(status => { return status.status === 'bomba' })
-        const markClear = statusAfliction.filter(status => { return status.status === 'marcado' })
-        const motivateClear = statusAfliction.filter(status => { return status.status === 'motivado' })
-        const parasiteClear = statusAfliction.filter(status => { return status.status === 'parasita' })
-        const chantagemClear = statusAfliction.filter(status => { return status.status === 'chantageado' })
-        for (let p = 0; p < bombClear.length; p++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/statusAfliction/statusAfliction`, bombClear[p].id)
-            deleteDoc(theRef)
-        }
-        for (let p = 0; p < chantagemClear.length; p++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/statusAfliction/statusAfliction`, chantagemClear[p].id)
-            deleteDoc(theRef)
-        }
-        for (let p = 0; p < markClear.length; p++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/statusAfliction/statusAfliction`, markClear[p].id)
-            deleteDoc(theRef)
-        }
-        for (let p = 0; p < motivateClear.length; p++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/statusAfliction/statusAfliction`, motivateClear[p].id)
-            deleteDoc(theRef)
-        }
         for (let i = 0; i < announcements.length; i++) {
             const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/announcements/announcements`, announcements[i].id)
             deleteDoc(theRef);
@@ -419,27 +280,6 @@ const Day = () => {
             const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/publicEvents/publicEvents`, allPublicEvents[i].id)
             deleteDoc(theRef)
 
-        }
-        for (let i = 0; i < armadilheiroInformation.length; i++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/armadilheiroInformation/armadilheiroInformation`, armadilheiroInformation[i].id)
-            deleteDoc(theRef)
-
-        }
-        for (let i = 0; i < spyInformation.length; i++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/spyInformation/spyInformation`, spyInformation[i].id)
-            deleteDoc(theRef)
-
-        }
-        for (let i = 0; i < fuxiqueiraInformation.length; i++) {
-            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/fuxiqueiraInformation/fuxiqueiraInformation`, fuxiqueiraInformation[i].id)
-            deleteDoc(theRef)
-
-        }
-        if (currentDay > 4) {
-            for (let p = 0; p < parasiteClear.length; p++) {
-                const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/statusAfliction/statusAfliction`, parasiteClear[p].id)
-                deleteDoc(theRef)
-            }
         }
     }
     const explodeBomb = () => {
@@ -489,7 +329,6 @@ const Day = () => {
         stopDayMusic();
         stopDramaticDeathMusic();
     }
-
     const filliationChecks = () => {
         const mafiaCheck = alivePlayers.filter((player) => player.filliation === 'the family')
         // Do same thing for coven in chase you want to program it in man.
@@ -646,7 +485,6 @@ const Day = () => {
     const adminPanel = () => {
         setAdminPanelIsOpen(true);
     }
-
     const plagueMurder = () => {
         setPlaguePanelIsOpen(false);
         const target = alivePlayers.filter(player => { return player.playerName === playerKilling });
@@ -810,12 +648,12 @@ const Day = () => {
                         Jogadores Vivos
                     </h4>
                            
-                    <div className="counterBox townies"> {townies.length}</div>
-                    <div className="counterBox mafiaies"> {mafiaies.length}</div>
-                    <div className="counterBox covenies"> {covenies.length}</div>
-                    <div className="counterBox neutraies" > {neutraies.length}</div>
-                    <div className="counterBox horsies" > {horsies.length}</div>
-                    </div>
+                        <div className="counterBox townies"> {alivePlayers.filter((player) => player.filliation === "town").length}</div>
+                    <div className="counterBox mafiaies"> {alivePlayers.filter((player) => player.filliation === "the family").length}</div>
+                    <div className="counterBox covenies"> {alivePlayers.filter((player) => player.filliation === "coven").length}</div>
+                    <div className="counterBox neutraies" > {alivePlayers.filter((player) => player.filliation === "neutral").length}</div>
+                    <div className="counterBox horsies" > {alivePlayers.filter((player) => player.filliation === "horsemen").length}</div>
+                    </div> 
                     <div className="large-container card-border scrollable">
                         {alivePlayers.map((player => (
                             <span className="alivePlayersConfig" key={player.key}>

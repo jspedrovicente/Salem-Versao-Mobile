@@ -25,7 +25,7 @@ const PlayerRole = () => {
     const [randomizerChosenRoles, setRandomizerChosenRoles] = useState([]);
     const navigate = useNavigate();
     useEffect(() => {
-        async function loadInfo() {
+        function loadInfo() {
             const userDetail = localStorage.getItem("UserLogin");
             setUser(JSON.parse(userDetail));
             const data = JSON.parse(userDetail);
@@ -46,95 +46,98 @@ const PlayerRole = () => {
                 setPlayerList(list);
             })
 
-            const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "town",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder,
-                        actionforRoleCounter: doc.data()?.actionforRoleCounter,
-                        enabledRole: doc.data().enabledRole,
-                        multiple: doc.data().multiple
-                    })
-                })
-                setTownRole(roles)
-
-            })
-            const mafiaSnapshot = onSnapshot(collection(database, "gamedata/roles/the family"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "the family",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder,
-                        actionforRoleCounter: doc.data()?.actionforRoleCounter,
-                        enabledRole: doc.data().enabledRole,
-                        multiple: doc.data().multiple
-                    })
-                })
-                setMafiaRole(roles);
-            })
-            const covenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "coven",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder,
-                        actionforRoleCounter: doc.data()?.actionforRoleCounter,
-                        enabledRole: doc.data().enabledRole,
-                        multiple: doc.data().multiple
-                    })
-                })
-                setCovenRole(roles);
-                
-            })
-            const horsemenSnapshot = onSnapshot(collection(database, "gamedata/roles/horsemen"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "horsemen",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder,
-                        actionforRoleCounter: doc.data()?.actionforRoleCounter,
-                        enabledRole: doc.data().enabledRole,
-                        multiple: doc.data().multiple
-
-                    })
-                })
-                setHorsemenRole(roles);
-                
-            })
-            const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "neutral",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder,
-                        actionforRoleCounter: doc.data()?.actionforRoleCounter,
-                        enabledRole: doc.data().enabledRole,
-                        multiple: doc.data().multiple
-
-                    })
-                })
-                setNeutralRole(roles);
-                console.log(roles);
-                
-            })
         }
         loadInfo();
+    }, [])
+    useEffect(() => {
+        
+        const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "town",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
+                })
+            })
+            setTownRole(roles)
+
+        })
+        const mafiaSnapshot = onSnapshot(collection(database, "gamedata/roles/the family"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "the family",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
+                })
+            })
+            setMafiaRole(roles);
+        })
+        const covenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "coven",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
+                })
+            })
+            setCovenRole(roles);
+            
+        })
+        const horsemenSnapshot = onSnapshot(collection(database, "gamedata/roles/horsemen"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "horsemen",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
+
+                })
+            })
+            setHorsemenRole(roles);
+            
+        })
+        const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "neutral",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
+
+                })
+            })
+            setNeutralRole(roles);
+            console.log(roles);
+            
+        })
     }, [])
     useEffect(() => {
 
@@ -151,7 +154,7 @@ const PlayerRole = () => {
         const chosenRole = allRoles.filter(role => role.role === currentRole);
         const chosenPlayerId = chosenPlayer[0].id
         const chosenRoleWakeOrder = chosenRole[0].wakeOrder
-        await updateDoc(doc(database, "playeradmin", "players", user.email, chosenPlayerId), { role: currentRole, filliation: currentFilliation, life: "alive", action: "pending", wakeOrder: chosenRoleWakeOrder, actionforRoleCounter: chosenRole[0].actionforRoleCounter? chosenRole[0].actionforRoleCounter : deleteField() })
+        await updateDoc(doc(database, "playeradmin", "players", user.email, chosenPlayerId), { role: currentRole, filliation: currentFilliation, life: "alive", action: "pending", wakeOrder: chosenRoleWakeOrder, willText: "", actionforRoleCounter: chosenRole[0].actionforRoleCounter? chosenRole[0].actionforRoleCounter : null})
 
     }
 

@@ -49,8 +49,6 @@ const Night = () => {
             setUser(JSON.parse(userDetail));
             const data = JSON.parse(userDetail);
         }
-
-        
         loadUserInformation();
     }, [])
     useEffect(() => {
@@ -77,80 +75,7 @@ const Night = () => {
                 setAlivePlayers(list.sort((a, b) => a.wakeOrder - b.wakeOrder).filter(player => player.life.includes("alive")))
                 setDeadPlayers(list.sort((a, b) => a.wakeOrder - b.wakeOrder).filter(player => player.life.includes("dead")))
             })
-            const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "town",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-                    })
-                })
-                setTownRole(roles)
 
-            })
-            const mafiaSnapshot = onSnapshot(collection(database, "gamedata/roles/mafia"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "mafia",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-
-                    })
-                })
-                setMafiaRole(roles);
-            })
-            const horsemenSnapshot = onSnapshot(collection(database, "gamedata/roles/horsemen"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "horsemen",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-
-                    })
-                })
-                setHorsemenRole(roles);
-                
-            })
-            const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "neutral",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-
-                    })
-                })
-                setNeutralRole(roles);
-                
-            })
-            const covenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
-                let roles = [];
-                snapshot.forEach((doc) => {
-                    roles.push({
-                        filliation: "coven",
-                        role: doc.data().role,
-                        skill: doc.data().skill,
-                        special: doc.data().special,
-                        wakeOrder: doc.data().wakeOrder
-
-                    })
-                })
-                setCovenRole(roles);
-                
-            })
-            
             const dayCounterSnapshot = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/dayCounter/dayCounter`), (snapshot) => {
                 let currentDay = [];
                 snapshot.forEach((doc) => {
@@ -162,13 +87,89 @@ const Night = () => {
         }
         loadPlayers();
     }, [user.email]);
+
+    useEffect(() => {
+        const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "town",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+                })
+            })
+            setTownRole(roles)
+
+        })
+        const mafiaSnapshot = onSnapshot(collection(database, "gamedata/roles/mafia"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "mafia",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+
+                })
+            })
+            setMafiaRole(roles);
+        })
+        const horsemenSnapshot = onSnapshot(collection(database, "gamedata/roles/horsemen"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "horsemen",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+
+                })
+            })
+            setHorsemenRole(roles);
+            
+        })
+        const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "neutral",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+
+                })
+            })
+            setNeutralRole(roles);
+            
+        })
+        const covenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "coven",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder
+
+                })
+            })
+            setCovenRole(roles);
+            
+        })
+    }, [])
     useEffect(() => {
         function addAllRoles(townRole, mafiaRole, horsemenRole, neutralRole, covenRole) {
             setAllRoles([...townRole, ...mafiaRole, ...horsemenRole, ...neutralRole, ...covenRole,])
            
         }
         addAllRoles(townRole, mafiaRole, horsemenRole, neutralRole, covenRole);
-    }, [horsemenRole])
+    }, [horsemenRole, mafiaRole, neutralRole, covenRole, townRole])
     useEffect(() => {
         const loadRememberedData = () => {
             const snapshots = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/mobilePlayerActions/mobilePlayerActionsSingle`), (snapshot) => {
@@ -183,30 +184,9 @@ const Night = () => {
                     targetRole: doc.data().targetRole,
                     wakeOrder: doc.data().wakeOrder,
                     targetId: doc.data().targetId
-                    
                 })
                     setMobilePlayerActionsSingle(actionForThis);
             })
-            })
-            const chatLogs = onSnapshot(collection(database, `playeradmin/chatsLog/jspedrogarcia@gmail.com`), (snapshot) => {
-                let conversations = []
-                snapshot.forEach((doc) => {
-                    conversations.push({
-                        autor: doc.data().autor, message: doc.data().mensagem, horario: doc.data().horario, id: doc.id
-                    })
-                })
-                const sortedMessages = conversations.sort((a, b) => a.horario - b.horario)
-                setDeadChatLogs(sortedMessages);
-            })
-            const evilChatLog = onSnapshot(collection(database, `playeradmin/familyChatLog/jspedrogarcia@gmail.com`), (snapshot) => {
-                let conversations = []
-                snapshot.forEach((doc) => {
-                    conversations.push({
-                        autor: doc.data().autor, message: doc.data().mensagem, horario: doc.data().horario, id: doc.id
-                    })
-                })
-                const sortedMessages = conversations.sort((a, b) => a.horario - b.horario)
-                setEvilChatLog(sortedMessages);
             })
         }
         loadRememberedData();
@@ -219,7 +199,7 @@ const Night = () => {
         let rolesImunetoBlocks = ['meretriz', 'taberneiro', 'miragem', 'executor', 'caloteira'];
         let rolesThatAttackBlockers = ['assassino em serie', 'mestre', 'lobisomen', 'morte', 'vigilante'];
         let rolesImunetoAttacks = ['piromaniaco', 'assassino em serie', 'sobrevivente']
-        let consideredEvilRoles = ['fome', 'guerra', 'morte', 'estranho', 'amaldicoadora', 'feiticeira benevolente', 'parasita', 'matriarca', 'mestre', 'mordomo', 'zelador', 'piromaniaco', 'assassino em serie', 'bobo da corte', 'executor', 'lobisomen', 'medico da peste', 'palhaco', 'pistoleiro' ]
+        let consideredEvilRoles = ['fome', 'guerra', 'morte', 'estranho', 'amaldicoadora', 'feiticeira benevolente', 'parasita', 'matriarca', 'mestre', 'mordomo', 'zelador', 'caloteira', 'piromaniaco', 'assassino em serie', 'bobo da corte', 'executor', 'lobisomen', 'medico da peste', 'palhaco', 'pistoleiro' ]
         let blockedTargets = [];
         let attackingAction = [];
         let visitsThatOccured = [];

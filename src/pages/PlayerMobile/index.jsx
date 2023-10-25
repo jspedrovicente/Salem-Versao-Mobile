@@ -10,6 +10,8 @@ import loadingEffect from "../../assets/svgs/loading-effect.svg"
 import eyeSVG from "../../assets/svgs/eye-svg.svg"
 import eyeCloseSVG from "../../assets/svgs/eye-closed-svg.svg"
 import questionSVG from "../../assets/svgs/question-svg.svg"
+import lifeDeadSVG from "../../assets/svgs/life-death-svg.svg"
+import xSVG from "../../assets/svgs/x-svg.svg"
 
 import './style.css';
 
@@ -42,14 +44,18 @@ const PlayerMobile = () => {
     const [hiddenPrivateInfo, setHiddenPrivateInfo] = useState(false);
     const [allEvilChat, setHiddenEvilChat] = useState([]);
     const [noActionsNight1, setNoActionsNight1] = useState(['assassino em serie', 'mestre', 'vigilante', 'lobisomen', 'palhaco', 'pistoleiro', 'zelador', 'caloteira', 'veterano'])
-
+    const [everythingSetUp, setEverythingSetUp] = useState(false);
     const [willOpen, setWillOpen] = useState(false);
+    const [playerListingOpen, setPlayerListingOpen] = useState(false);
     const [cardOpen, setCardOpen] = useState(false);
     const [questionOpen, setQuestionOpen] = useState(false);
+    const [eraseModalOpen, setEraseModalOpen] = useState(false);
+
     useEffect(() => {
         const loadPlayers = () => {
             const x = onSnapshot(collection(database, `playeradmin/players/jspedrogarcia@gmail.com`), (snapshot) => {
                 let list = [];
+                let playerInfo = [];
                 snapshot.forEach((doc) => {
                     list.push({
                         id: doc.id,
@@ -58,18 +64,71 @@ const PlayerMobile = () => {
                         victoryPoints: doc.data().victoryPoints,
                         role: doc.data().role,
                         filliation: doc.data().filliation,
-                        life: doc.data().life,
+                        image: doc.data().image,
+                        willText: doc.data().willText,
                         action: doc.data().action,
-                        wakeOrder: doc.data().wakeOrder,
                         newResponse: doc.data().newResponse,
+                        wakeOrder: doc.data().wakeOrder,
+                        buff: doc.data().buff,
+                        debuff: doc.data().debuff,
+                        clownBomb: doc.data().clownBomb,
+                        pistoleiroMark: doc.data().pistoleiroMark,
                         doused: doc.data().doused,
+                        executorTarget: doc.data().executorTarget,
+                        life: doc.data().life,
+                        actionforRoleCounter: doc.data().actionforRoleCounter,
                     })
+                    if (doc.id === registeredPlayerId) {
+                        playerInfo.push({
+                            id: doc.id,
+                            key: doc.id,
+                            playerName: doc.data().playerName,
+                            victoryPoints: doc.data().victoryPoints,
+                            role: doc.data().role,
+                            filliation: doc.data().filliation,
+                            image: doc.data().image,
+                            willText: doc.data().willText,
+                            action: doc.data().action,
+                            newResponse: doc.data().newResponse,
+                            wakeOrder: doc.data().wakeOrder,
+                            buff: doc.data().buff,
+                            debuff: doc.data().debuff,
+                            clownBomb: doc.data().clownBomb,
+                            pistoleiroMark: doc.data().pistoleiroMark,
+                            doused: doc.data().doused,
+                            executorTarget: doc.data().executorTarget,
+                            life: doc.data().life,
+                            actionforRoleCounter: doc.data().actionforRoleCounter
+                        })
+                        if (playerInfo[0].role !== 'none') {
+                            const chosenRole = allRoles.filter((role) => role.role === playerInfo[0].role)
+                            setPlayerCurrentRole(chosenRole);
+                            console.log(chosenRole)
+                            setWillText(playerInfo[0].willText);
+                        }
+                        console.log(playerInfo);
+                        setPlayerCurrentInformation(playerInfo);
+                        
+                    }
                 })
                 setPlayers(list);
                 setAlivePlayers(list.filter(player => player.life.includes("alive")))
                 setDeadPlayers(list.filter(player => player.life.includes("dead")))
             })
         }
+
+        const a = onSnapshot(collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/gameState/gameState`), (snapshot) => {
+            let gameState = 'inicio';
+            snapshot.forEach((doc) => {
+                gameState = (doc.data().gameState)
+            })
+            setGameState(gameState);
+        })
+        loadPlayers();
+
+        setEverythingSetUp(true);
+    }, [registeredPlayerId, allRoles]);
+    useEffect(() => {
         const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
             let roles = [];
             snapshot.forEach((doc) => {
@@ -147,20 +206,23 @@ const PlayerMobile = () => {
                 })
             })
             setNeutralRole(roles);
+        })
+        console.log(allRoles)
+    }, [])
+    useEffect(() => {
+        if (everythingSetUp) {
             
-        })
-        const a = onSnapshot(collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/gameState/gameState`), (snapshot) => {
-            let gameState = 'inicio';
-            snapshot.forEach((doc) => {
-                gameState = (doc.data().gameState)
-            })
-            setGameState(gameState);
-        })
-        loadPlayers();
-
-
-    }, [user.email]);
+            let playerId = localStorage.getItem("playerID");
+            console.log(playerId)
+            if (playerId != null) {
+                    setRegisteredPlayerId(playerId);
+            } else {
+                setRegisteredPlayerId('');
+            }
+        }
+    }, [everythingSetUp])
     // Load all the Roles
+
     useEffect(() => {
         function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole) {
             setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole])
@@ -170,43 +232,6 @@ const PlayerMobile = () => {
 
     }, [covenRole])
     useEffect(() => {
-            const a = onSnapshot(collection(database, `playeradmin/players/jspedrogarcia@gmail.com`), (snapshot) => {
-                let playerInfo = [];
-                snapshot.forEach((doc) => {
-                    if (doc.id === registeredPlayerId) {
-                        playerInfo.push({
-                            id: doc.id,
-                            key: doc.id,
-                            playerName: doc.data().playerName,
-                            victoryPoints: doc.data().victoryPoints,
-                            role: doc.data().role,
-                            filliation: doc.data().filliation,
-                            image: doc.data().image,
-                            willText: doc.data().willText,
-                            action: doc.data().action,
-                            newResponse: doc.data().newResponse,
-                            wakeOrder: doc.data().wakeOrder,
-                            buff: doc.data().buff,
-                            debuff: doc.data().debuff,
-                            clownBomb: doc.data().clownBomb,
-                            pistoleiroMark: doc.data().pistoleiroMark,
-                            doused: doc.data().doused,
-                            executorTarget: doc.data().executorTarget,
-                            life: doc.data().life,
-                            actionforRoleCounter: doc.data().actionforRoleCounter,
-                            
-                        })
-                        if (playerInfo[0].role !== 'none') {
-                            const chosenRole = allRoles.filter((role) => role.role === playerInfo[0].role)
-                            setPlayerCurrentRole(chosenRole);
-                            console.log(chosenRole)
-                            setWillText(playerInfo[0].willText);
-                    }
-                    }
-                })
-                setPlayerCurrentInformation(playerInfo);
-                console.log(playerInfo)
-            })
         
             const dayCounterSnapshot = onSnapshot(collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/dayCounter/dayCounter`), (snapshot) => {
                 let currentDayx = [];
@@ -235,48 +260,8 @@ const PlayerMobile = () => {
                 setHiddenEvilChat(sortedMessages)
             })
         }, [registeredPlayerId])
-    
-
-        function findmyCookies() {
-            let name = "playerID=";
-            let decodedCookie = decodeURIComponent(document.cookie);
-            let ca = decodedCookie.split(';');
-            console.log(ca);
-            for(let i = 0; i <ca.length; i++) {
-              let c = ca[i];
-              while (c.charAt(0) === ' ') {
-                c = c.substring(1);
-                }
-                console.log(c.indexOf(name))
-                if (c.indexOf(name) === 0) {
-                    const myAcc = players.filter((player) => player.id === c.substring(name.length, c.length))
-                    console.log(myAcc);
-                    if (myAcc.length > 0) {
-                        setPlayerCurrentInformation(myAcc[0]);
-                        setRegisteredPlayerId(c.substring(name.length, c.length))
-                        return;
-                    } else {
-                        Store.addNotification({
-                            title: "Conta NÃO Encontrada",
-                            message: "Recomendo que faça o cadastro novamente!",
-                            type: "warning",
-                            insert: "top",
-                            container: "top-right",
-                            animationIn: ["animate__animated", "animate__fadeIn"],
-                            animationOut: ["animate__animated", "animate__fadeOut"],
-                            dismiss: {
-                              duration: 5000,
-                              onScreen: true
-                            }
-                        })
-                    }
-                }
-
-            }
-            return "";
-        }
-        
-        function handlePlayerSignUp(event) {
+            
+    function handlePlayerSignUp(event) {
             event.preventDefault()
             const ref = collection(database, `playeradmin/players/jspedrogarcia@gmail.com`)
             const fixedName = name.replace(/ /g, '')
@@ -298,9 +283,8 @@ const PlayerMobile = () => {
                 executorTarget: false,
             }) 
             .then(function (docRef) {
-                    setRegisteredPlayerId(docRef.id);
-                    document.cookie = "playerID = " + docRef.id;
-                    console.log(document.cookie);
+                setRegisteredPlayerId(docRef.id);
+                localStorage.setItem("playerID", docRef.id);
             })
             .then(() => {
                         Store.addNotification({
@@ -318,7 +302,17 @@ const PlayerMobile = () => {
                         })
             })
     }
-    
+    const erasePlayerInfo = async () => {
+        localStorage.setItem("playerID", '')
+        setRegisteredPlayerId('');
+        setEraseModalOpen(false);
+        const filteredPlayer = players.filter(player => player.id === registeredPlayerId);
+        console.log(filteredPlayer);
+        if (filteredPlayer.length > 0) {
+            const theRef = doc(database, `playeradmin/players/jspedrogarcia@gmail.com`, filteredPlayer[0].id);
+            await deleteDoc(theRef)
+        }
+    }
     const handleWillSave = () => {
         updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { willText: willText})
         .then(() => {
@@ -516,17 +510,23 @@ const PlayerMobile = () => {
                                 <p>Aguarde um aviso prévio do Administrador para Cadastrar seu nome!</p>
                                 <button type="submit" className="button">Cadastrar</button>
             </form>
-                                <button className="button" onClick={findmyCookies}>Já Cadastrei!</button>
             </div>
             </>
             )
             :
             gameState === 'inicio' ?
             (
-            <div className="waitingForMatch">
-                                Aguardando inicio da partida!
+                            <div className="waitingForMatch">
+                                <p>
+                                Bem-vindo {playerCurrentInformation[0]?.playerName}!
+                                </p>
+                                Você está cadastrado, agora aguarde o inicio da partida!
                                 <div className="loading">
                                 <img src={loadingEffect}></img>
+                                </div>
+                                <div className="interactiveButtons">
+                                    <button className="intButton" onClick={() => setEraseModalOpen(true)}><img src={xSVG}></img></button>
+
                                 </div>
             </div>
             ) :
@@ -552,6 +552,7 @@ const PlayerMobile = () => {
                                     <button className="intButton" onClick={() => setHiddenPrivateInfo(hiddenPrivateInfo => !hiddenPrivateInfo)}><img src={hiddenPrivateInfo? eyeCloseSVG : eyeSVG}></img></button>
                                     <button className="intButton" onClick={() => setCardOpen(true)}><img src={cardSVG}></img></button>
                                         <button className="intButton" onClick={() => setWillOpen(true)}><img src={scrollSVG}></img></button>
+                                        <button className="intButton" onClick={() => setPlayerListingOpen(true)}><img src={lifeDeadSVG}></img></button>
                                     <button className="intButton" onClick={() => setQuestionOpen(true)}><img src={questionSVG}></img></button>
                                     </div>
                                     <div className="playerNoticeBox">
@@ -809,6 +810,16 @@ const PlayerMobile = () => {
 
 
             {/* The popups */}
+            <Popup position="center" open={eraseModalOpen} modal closeOnEscape={true} closeOnDocumentClick={true}>
+                <div>
+                    <div className="header"> Apagar Cadastro</div>
+                    <div className="cardDetailedInformation">
+                        Você quer mesmo apagar seu cadastro?
+                <button className="button" onClick={() => erasePlayerInfo()}>Sim</button>
+                <button className="button" onClick={() => setEraseModalOpen(false)}>Não</button>
+                    </div>
+                    </div>
+            </Popup>
             <Popup className="modalMobile" position="center" open={cardOpen} modal closeOnEscape={false} closeOnDocumentClick={false}>
                 <div>
 
@@ -818,7 +829,7 @@ const PlayerMobile = () => {
             {playerCurrentRole.length > 0 ? (
                         <img className="cardImg img-responsive" src={playerCurrentRole[0].image} alt={playerCurrentRole[0].role} /> 
                 ) : (<div>Você ainda não possui carta! Só aguardar!</div>)}
-                <button className="button" onClick={() => setCardOpen(false)}>Fechar</button>
+                <button className="button fixedButton" onClick={() => setCardOpen(false)}>Fechar</button>
                     </div>
                     </div>
             </Popup>
@@ -827,7 +838,7 @@ const PlayerMobile = () => {
                     <div className="header">Ajuda</div>
                     <div className="cardDetailedInformation">
                     <div>O que te ajudará</div>
-                <button className="button" onClick={() => setQuestionOpen(false)}>Fechar</button>
+                <button className="button fixedButton" onClick={() => setQuestionOpen(false)}>Fechar</button>
                     </div>
                     </div>
             </Popup>
@@ -840,12 +851,33 @@ const PlayerMobile = () => {
                     <div className="header"> Seu Testamento</div>
                     <div className="testamentInformation">
                         <p>Informações que você gostaria de lembrar</p>
-                        <textarea autoFocus={false} className="testamentTextArea" name="" id="" value={willText} onChange={(e) => setWillText(e.target.value)}></textarea>
+                        <textarea className="testamentTextArea" name="" id="" value={willText} onChange={(e) => setWillText(e.target.value)}></textarea>
                     </div>
-                    <div>
-                <button className="button" onClick={handleWillSave}>Salvar Testamento</button>
-                <button className="button" onClick={() => setWillOpen(false)}>Fechar</button>
+                    <div className="fixedButton">
+                <button className="button " onClick={handleWillSave}>Salvar Testamento</button>
+                <button className="button " onClick={() => setWillOpen(false)}>Fechar</button>
                     </div>
+                </div>
+            </Popup>
+            <Popup className="modalMobile"  open={playerListingOpen} modal closeOnEscape={false} closeOnDocumentClick={false}>
+                <div className="modal-testatamentcontent">
+
+                    <div className="header"> Lista de Jogadores</div>
+                    <div className="playerListingModal">
+                        <div className="listing-inner-modal scrollable">
+                            Jogadores Vivos
+                        <p>{alivePlayers.map((player) => (
+                            <p>{player.playerName }</p>
+                            )) }</p>
+                        </div>
+                        <div className="listing-inner-modal scrollable">
+                            Jogadores Mortos
+                        <p>{deadPlayers.map((player) => (
+                            <p>{player.playerName }</p>
+                            )) }</p>
+                        </div>
+                    </div>
+                <button className="button fixedButton" onClick={() => setPlayerListingOpen(false)}>Fechar</button>
                 </div>
             </Popup>
 
