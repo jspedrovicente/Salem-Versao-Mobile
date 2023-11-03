@@ -21,6 +21,7 @@ import jesterDeathMusic from "../../assets/daysounds/jesterDeathEffect.mp3"
 import apocalipseMusic from "../../assets/daysounds/ApocalipseVictoryMusic.mp3"
 import revivalCallEffect from "../../assets/daysounds/revivalCallEffect.mp3"
 import ActiveRevivalEffect from "../../assets/daysounds/ActiveRevivalEffect.mp3"
+import ocultistVictoryEffect from "../../assets/daysounds/OcultistVictory.mp3"
 import boneBreakSoundEffect from "../../assets/daysounds/boneBreakSoundEffect.mp3"
 import bombSvg from "../../assets/svgs/bomb-svg.svg"
 import bulletSvg from "../../assets/svgs/bullet-svg.svg"
@@ -43,12 +44,14 @@ const Day = () => {
     const [playActiveRevivalEffect] = useSound(ActiveRevivalEffect, { volume: 0.60 });
     const [playDramaticDeathMusic, { stop: stopDramaticDeathMusic }] = useSound(dramaticDeathMusic);
     const [playApocalipseMusic] = useSound(apocalipseMusic);
+    const [playOcultistVictoryEffect] = useSound(ocultistVictoryEffect);
     const [isOpen, setIsOpen] = useState(true);
     const [judgementPanelIsOpen, setJudgementPanelIsOpen] = useState(false);
     const [adminPanelIsOpen, setAdminPanelIsOpen] = useState(false);
     const [plaguePanelIsOpen, setPlaguePanelIsOpen] = useState(false);
     const [jesterPanelIsOpen, setJesterPanelIsOpen] = useState(false);
     const [killPanelIsOpen, setKillPanelIsOpen] = useState(false);
+    const [openOcultistModal, setOpenOcultistModal] = useState(false);
     const [apocalipsePanelIsOpen, setApocalipsePanelIsOpen] = useState(false);
     const [is2ModalOpen, setIs2ModalOpen] = useState(false);
     const [isReviveModalOpen, setIsReviveModalOpen] = useState(false);
@@ -64,6 +67,7 @@ const Day = () => {
     const [townRole, setTownRole] = useState([]);
     const [covenRole, setCovenRole] = useState([]);
     const [horsemenRole, setHorsemenRole] = useState([]);
+    const [cultRole, setCultRole] = useState([]);
     const [mafiaRole, setMafiaRole] = useState([]);
     const [neutralRole, setNeutralRole] = useState([]);
     const [allRoles, setAllRoles] = useState([]);
@@ -89,26 +93,29 @@ const Day = () => {
             const x = onSnapshot(collection(database, `playeradmin/players/${user.email}`), (snapshot) => {
                 let list = [];
                 snapshot.forEach((doc) => {
-                    list.push({
-                        id: doc.id,
-                        key: doc.id,
-                        playerName: doc.data().playerName,
-                        victoryPoints: doc.data().victoryPoints,
-                        role: doc.data().role,
-                        filliation: doc.data().filliation,
-                        life: doc.data().life,
-                        action: doc.data().action,
-                        wakeOrder: doc.data().wakeOrder,    
-                        willText: doc.data().willText,
-                        clownBomb: doc.data().clownBomb,
-                        pistoleiroMark: doc.data().pistoleiroMark,
-                        buff: doc.data().buff,
-                        debuff: doc.data().debuff,
-                        executorTarget: doc.data().executorTarget,
-                        newResponse: doc.data().newResponse,
-                        doused: doc.data().doused,
-                        actionforRoleCounter: doc.data().actionforRoleCounter
-                    })
+                    if (doc.data().activePlayer === true) {
+                        list.push({
+                            id: doc.id,
+                            key: doc.id,
+                            playerName: doc.data().playerName,
+                            victoryPoints: doc.data().victoryPoints,
+                            role: doc.data().role,
+                            filliation: doc.data().filliation,
+                            life: doc.data().life,
+                            action: doc.data().action,
+                            wakeOrder: doc.data().wakeOrder,    
+                            willText: doc.data().willText,
+                            clownBomb: doc.data().clownBomb,
+                            pistoleiroMark: doc.data().pistoleiroMark,
+                            buff: doc.data().buff,
+                            debuff: doc.data().debuff,
+                            executorTarget: doc.data().executorTarget,
+                            newResponse: doc.data().newResponse,
+                            doused: doc.data().doused,
+                            actionforRoleCounter: doc.data().actionforRoleCounter,
+                            cultChoice: doc.data().cultChoice
+                        })
+                    }
                 })
                 setPlayers(list);
                 setAlivePlayers(list.sort((a, b) => a.wakeOrder - b.wakeOrder).filter(player => player.life.includes("alive")))
@@ -127,14 +134,7 @@ const Day = () => {
         loadPlayers();
     }, [user]);
     useEffect(() => {
-    
-        function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole) {
-            setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole])
-           
-        }
-        addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole);
-    }, [covenRole])
-    useEffect(() => {
+        
         const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
             let roles = [];
             snapshot.forEach((doc) => {
@@ -143,7 +143,10 @@ const Day = () => {
                     role: doc.data().role,
                     skill: doc.data().skill,
                     special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
                 })
             })
             setTownRole(roles)
@@ -157,8 +160,10 @@ const Day = () => {
                     role: doc.data().role,
                     skill: doc.data().skill,
                     special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
-
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
                 })
             })
             setMafiaRole(roles);
@@ -171,14 +176,16 @@ const Day = () => {
                     role: doc.data().role,
                     skill: doc.data().skill,
                     special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
-
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
                 })
             })
             setCovenRole(roles);
             
         })
-        const horsemenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
+        const horsemenSnapshot = onSnapshot(collection(database, "gamedata/roles/horsemen"), (snapshot) => {
             let roles = [];
             snapshot.forEach((doc) => {
                 roles.push({
@@ -186,11 +193,32 @@ const Day = () => {
                     role: doc.data().role,
                     skill: doc.data().skill,
                     special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
 
                 })
             })
             setHorsemenRole(roles);
+            
+        })
+        const cultSnapshot = onSnapshot(collection(database, "gamedata/roles/cult"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "cult",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
+
+                })
+            })
+            setCultRole(roles);
             
         })
         const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
@@ -201,7 +229,10 @@ const Day = () => {
                     role: doc.data().role,
                     skill: doc.data().skill,
                     special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
 
                 })
             })
@@ -209,6 +240,15 @@ const Day = () => {
             
         })
     }, [])
+    useEffect(() => {
+
+        function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole, cultRole) {
+            setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole, ...cultRole])
+           
+        }
+        addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole);
+
+    }, [covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole])
     useEffect(() => {
         const importData = () => {
             const visitData = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/visitAction/visitAction`), (snapshot) => {
@@ -261,7 +301,7 @@ const Day = () => {
 
         // Limpando o todos status effects
         for (let i = 0; i < players.length; i++){
-            updateDoc(doc(database, `playeradmin/players/${user.email}/${players[i].id}`), { newResponse: "", buff: "", debuff: "", clownBomb: false, pistoleiroMark: false, doused: false, executorTarget: false });
+            updateDoc(doc(database, `playeradmin/players/${user.email}/${players[i].id}`), { newResponse: "", buff: "", debuff: "", clownBomb: false, pistoleiroMark: false, doused: false, executorTarget: false, cultChoice: false });
         }
         await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "dayCounter", "dayCounter", "dayCounter"), { currentDay: 1 })
         navigateToNight('/playerrole')
@@ -507,6 +547,13 @@ const Day = () => {
     const finalizeReadings = () => {
         updateDoc(doc(database, "playeradmin", "blackout", user.email, 'blackout'), { blackout: 'false' })
         setIs2ModalOpen(false)
+        const cultLeader = alivePlayers.filter(player => player.filliation === 'cult');
+        const cultFollowers = alivePlayers.filter(player => player.cultChoice === true);
+        if (cultLeader.length > 0 && cultFollowers.length > 3) {
+            stopDayMusic();
+            playOcultistVictoryEffect();
+            setOpenOcultistModal(true)
+        }
     }
     return (
         <div className="day">
@@ -639,7 +686,14 @@ const Day = () => {
                                 <p className="statusAfliction-estado">é o alvo do</p>
                                 <p className="statusAfliction-evento">Executor</p>
                             </span>
-                    ))}
+                        ))}
+                        {alivePlayers.filter((player) => player.cultChoice === true).map((player) => (
+                            <span className="statusAflictions">
+                                    <p className="statusAfliction-player">{player.playerName}</p>
+                                    <p className="statusAfliction-estado">faz parte do</p>
+                                    <p className="statusAfliction-evento">Culto</p>
+                            </span>
+                        ))}
                     </div>
                 </div>
                 <div className="event-aliveplayers event">
@@ -653,6 +707,7 @@ const Day = () => {
                     <div className="counterBox covenies"> {alivePlayers.filter((player) => player.filliation === "coven").length}</div>
                     <div className="counterBox neutraies" > {alivePlayers.filter((player) => player.filliation === "neutral").length}</div>
                     <div className="counterBox horsies" > {alivePlayers.filter((player) => player.filliation === "horsemen").length}</div>
+                    <div className="counterBox cultisties" > {alivePlayers.filter((player) => player.filliation === "cult").length}</div>
                     </div> 
                     <div className="large-container card-border scrollable">
                         {alivePlayers.map((player => (
@@ -662,6 +717,7 @@ const Day = () => {
                                 {player.filliation === 'coven' && <p className="covenies">{player.role}</p>}
                                 {player.filliation === 'neutral' && <p className="neutraies">{player.role}</p>}
                                 {player.filliation === 'horsemen' && <p className="horsies">{player.role}</p>}
+                                {player.filliation === 'cult' && <p className="cultisties">{player.role}</p>}
                             </span>
                         )))}
                         </div>
@@ -785,6 +841,17 @@ const Day = () => {
                     <div className="modalNight">
                     <div className="header">Vitória dos Cavaleiros do Apocalipse </div>
                     <div className="contentDeathAnouncement">
+                    <button className="button" onClick={endGameCompletely}>Encerrar Jogo</button>
+                        
+                    </div>
+                    </div>
+                    
+            </Popup>
+            <Popup open={openOcultistModal} modal closeOnDocumentClick={false}>
+                    <div className="modalNight">
+                    <div className="header">Vitória do Ocultista e seus seguidores </div>
+                    <div className="contentDeathAnouncement">
+                        O Ocultista {alivePlayers.filter(player => player.filliation === 'cult').map(pl => (pl.playerName))} iniciou o ritual de Invocação junto com seus seguidores: {alivePlayers.filter(player => player.cultChoice === true).map(pl => (<p key={pl.id}>{pl.playerName}</p> ))} Após se sacrificarem, foi invocado algo do além que os humanos não conseguiram conter, com isso o Fim da Humanidade.
                     <button className="button" onClick={endGameCompletely}>Encerrar Jogo</button>
                         
                     </div>

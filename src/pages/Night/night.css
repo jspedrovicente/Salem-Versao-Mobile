@@ -1,16 +1,8 @@
-.huge-container{
-        width: 100%;
-        height: 100%;
-        display: flex;
-    flex-direction: column;
-    align-items: center;
-}
 .night{
     display: flex;
     flex-direction: column;
     align-items: center;
 }
-
 .nightMain{
     display: flex;
     width: 100vw;
@@ -18,18 +10,18 @@
     height: 100%;
 
 }
-
+.chatsAtivosNight{
+    display: flex;
+}
 .event-currentplayers{
     margin-left: 20px;
 }
-
 .night-right{
     display: flex;
     flex-direction: column;
     align-items: center;
 
 }
-
 .night-right button{
     margin-top: 20px;
 }
@@ -45,11 +37,16 @@
     align-items: center;
     flex-direction: column;
 }
-.huge-container .information{
+.huge-container, .information{
+    min-height: 200px;
+    width: 100%;
+    /* height: 100%; */
+}
+
+.order, .information{
     display: flex;
     justify-content: flex-start;
     flex-direction: column;
-    min-height: 120px;
     align-items: center;
 }
 
@@ -87,4 +84,20 @@ select{
 }
 .buttonBox .button{
     margin: 0px 10px;
+}
+
+.chatsAtivosNight{
+    display: flex;
+    justify-content: space-between;
+
+}
+.midTitle{
+    align-self: center;
+}
+
+.innerBox{
+    width: 40%;
+    display: flex;
+    flex-direction: column;
+
 }

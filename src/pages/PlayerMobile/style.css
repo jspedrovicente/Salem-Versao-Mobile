@@ -75,7 +75,7 @@
 }
 .playerInfo, .mafiaInfo, .playerNotice, .chatMortos, .piromaniacoInfo, .evilChatInfo{
     border: 1px solid #B0B159;
-    width: 90vw;
+    width: 100%;
     min-height: 10vh;
     border-radius: 10px; 
 }
@@ -85,6 +85,7 @@
     flex-direction: column;
     align-items: center;
     margin-top: 10px;
+    width: 100%;
 }
 .evilChatButtons{
   display: flex;
@@ -106,7 +107,16 @@
 .eyeButton img{
     vertical-align: text-bottom;    
 }
-
+.basicFlex{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  border: 1px solid #B0B159;
+  border-radius: 10px;
+  margin-top: 10px;
+}
 
 .modalMobile-content{
   width: 90vw;
@@ -120,6 +130,13 @@
   border-radius: 10px;
   color: white;
 
+}
+.widthNightAdjust{
+  width: 80%;
+}
+.littleinformativo{
+  font-size: 13px;
+  font-style: italic;
 }
 .playerListingModal{
   display: flex;

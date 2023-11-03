@@ -10,9 +10,10 @@ import loadingEffect from "../../assets/svgs/loading-effect.svg"
 import eyeSVG from "../../assets/svgs/eye-svg.svg"
 import eyeCloseSVG from "../../assets/svgs/eye-closed-svg.svg"
 import questionSVG from "../../assets/svgs/question-svg.svg"
+import ghostSVG from "../../assets/svgs/ghost-svg.svg"
 import lifeDeadSVG from "../../assets/svgs/life-death-svg.svg"
 import xSVG from "../../assets/svgs/x-svg.svg"
-
+import ButtonMobile from "../../components/ButtonMobile";
 import './style.css';
 
 
@@ -28,6 +29,7 @@ const PlayerMobile = () => {
     const [townRole, setTownRole] = useState([]);
     const [covenRole, setCovenRole] = useState([]);
     const [horsemenRole, setHorsemenRole] = useState([]);
+    const [cultRole, setCultRole] = useState([]);
     const [mafiaRole, setMafiaRole] = useState([]);
     const [neutralRole, setNeutralRole] = useState([]);
     const [allRoles, setAllRoles] = useState([]);
@@ -35,6 +37,8 @@ const PlayerMobile = () => {
     const [playerCurrentInformation, setPlayerCurrentInformation] = useState([]);
     const [currentDay, setCurrentDay] = useState(0);
     const [willText, setWillText] = useState('');
+    const [fauxTextBox, setFauxTextBox] = useState('');
+    const [copiedText, setCopiedText] = useState('eu sou jogador beta de aquisicao de salem');
     const [target1, setTarget1] = useState('');
     const [target2, setTarget2] = useState('');
     const [weaponChoice, setWeaponChoice] = useState('');
@@ -57,29 +61,8 @@ const PlayerMobile = () => {
                 let list = [];
                 let playerInfo = [];
                 snapshot.forEach((doc) => {
-                    list.push({
-                        id: doc.id,
-                        key: doc.id,
-                        playerName: doc.data().playerName,
-                        victoryPoints: doc.data().victoryPoints,
-                        role: doc.data().role,
-                        filliation: doc.data().filliation,
-                        image: doc.data().image,
-                        willText: doc.data().willText,
-                        action: doc.data().action,
-                        newResponse: doc.data().newResponse,
-                        wakeOrder: doc.data().wakeOrder,
-                        buff: doc.data().buff,
-                        debuff: doc.data().debuff,
-                        clownBomb: doc.data().clownBomb,
-                        pistoleiroMark: doc.data().pistoleiroMark,
-                        doused: doc.data().doused,
-                        executorTarget: doc.data().executorTarget,
-                        life: doc.data().life,
-                        actionforRoleCounter: doc.data().actionforRoleCounter,
-                    })
-                    if (doc.id === registeredPlayerId) {
-                        playerInfo.push({
+                    if (doc.data().activePlayer === true) {
+                        list.push({
                             id: doc.id,
                             key: doc.id,
                             playerName: doc.data().playerName,
@@ -98,18 +81,46 @@ const PlayerMobile = () => {
                             doused: doc.data().doused,
                             executorTarget: doc.data().executorTarget,
                             life: doc.data().life,
-                            actionforRoleCounter: doc.data().actionforRoleCounter
+                            actionforRoleCounter: doc.data().actionforRoleCounter,
+                            cultChoice: doc.data().cultChoice,
+                            activePlayer: doc.data().activePlayer
                         })
-                        if (playerInfo[0].role !== 'none') {
-                            const chosenRole = allRoles.filter((role) => role.role === playerInfo[0].role)
-                            setPlayerCurrentRole(chosenRole);
-                            console.log(chosenRole)
-                            setWillText(playerInfo[0].willText);
-                        }
-                        console.log(playerInfo);
-                        setPlayerCurrentInformation(playerInfo);
-                        
                     }
+                        if (doc.id === registeredPlayerId) {
+                            playerInfo.push({
+                                id: doc.id,
+                                key: doc.id,
+                                playerName: doc.data().playerName,
+                                victoryPoints: doc.data().victoryPoints,
+                                role: doc.data().role,
+                                filliation: doc.data().filliation,
+                                image: doc.data().image,
+                                willText: doc.data().willText,
+                                action: doc.data().action,
+                                newResponse: doc.data().newResponse,
+                                wakeOrder: doc.data().wakeOrder,
+                                buff: doc.data().buff,
+                                debuff: doc.data().debuff,
+                                clownBomb: doc.data().clownBomb,
+                                pistoleiroMark: doc.data().pistoleiroMark,
+                                doused: doc.data().doused,
+                                executorTarget: doc.data().executorTarget,
+                                life: doc.data().life,
+                                actionforRoleCounter: doc.data().actionforRoleCounter,
+                                cultChoice: doc.data().cultChoice,
+                                activePlayer: doc.data().activePlayer
+                            })
+                            if (playerInfo[0].role !== 'none') {
+                                const chosenRole = allRoles.filter((role) => role.role === playerInfo[0].role)
+                                setPlayerCurrentRole(chosenRole);
+                                console.log(chosenRole)
+                                setWillText(playerInfo[0].willText);
+                            }
+                            console.log(playerInfo);
+                            setPlayerCurrentInformation(playerInfo);
+                        
+                        }
+                    
                 })
                 setPlayers(list);
                 setAlivePlayers(list.filter(player => player.life.includes("alive")))
@@ -129,6 +140,7 @@ const PlayerMobile = () => {
         setEverythingSetUp(true);
     }, [registeredPlayerId, allRoles]);
     useEffect(() => {
+        
         const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
             let roles = [];
             snapshot.forEach((doc) => {
@@ -138,8 +150,11 @@ const PlayerMobile = () => {
                     skill: doc.data().skill,
                     special: doc.data().special,
                     wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple,
                     image: doc.data().image,
-                    wakeTrigger: doc.data().WakeTrigger
+                    wakeTrigger: doc.data().WakeTrigger,
                 })
             })
             setTownRole(roles)
@@ -154,8 +169,11 @@ const PlayerMobile = () => {
                     skill: doc.data().skill,
                     special: doc.data().special,
                     wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple,
                     image: doc.data().image,
-                    wakeTrigger: doc.data().WakeTrigger
+                    wakeTrigger: doc.data().WakeTrigger,
                 })
             })
             setMafiaRole(roles);
@@ -169,8 +187,11 @@ const PlayerMobile = () => {
                     skill: doc.data().skill,
                     special: doc.data().special,
                     wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple,
                     image: doc.data().image,
-                    wakeTrigger: doc.data().WakeTrigger
+                    wakeTrigger: doc.data().WakeTrigger,
                 })
             })
             setCovenRole(roles);
@@ -185,11 +206,35 @@ const PlayerMobile = () => {
                     skill: doc.data().skill,
                     special: doc.data().special,
                     wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple,
                     image: doc.data().image,
-                    wakeTrigger: doc.data().WakeTrigger
+                    wakeTrigger: doc.data().WakeTrigger,
+
                 })
             })
             setHorsemenRole(roles);
+            
+        })
+        const cultSnapshot = onSnapshot(collection(database, "gamedata/roles/cult"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "cult",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple,
+                    image: doc.data().image,
+                    wakeTrigger: doc.data().WakeTrigger,
+
+                })
+            })
+            setCultRole(roles);
             
         })
         const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
@@ -201,14 +246,27 @@ const PlayerMobile = () => {
                     skill: doc.data().skill,
                     special: doc.data().special,
                     wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple,
                     image: doc.data().image,
-                    wakeTrigger: doc.data().WakeTrigger
+                    wakeTrigger: doc.data().WakeTrigger,
+
                 })
             })
             setNeutralRole(roles);
+            
         })
-        console.log(allRoles)
     }, [])
+    useEffect(() => {
+
+        function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole, cultRole) {
+            setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole, ...cultRole])
+           
+        }
+        addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole);
+
+    }, [covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole])
     useEffect(() => {
         if (everythingSetUp) {
             
@@ -223,14 +281,6 @@ const PlayerMobile = () => {
     }, [everythingSetUp])
     // Load all the Roles
 
-    useEffect(() => {
-        function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole) {
-            setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole])
-           
-        }
-        addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole);
-
-    }, [covenRole])
     useEffect(() => {
         
             const dayCounterSnapshot = onSnapshot(collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/dayCounter/dayCounter`), (snapshot) => {
@@ -281,6 +331,8 @@ const PlayerMobile = () => {
                 pistoleiroMark: false,
                 doused: false,
                 executorTarget: false,
+                cultChoice: false,
+                activePlayer: false,
             }) 
             .then(function (docRef) {
                 setRegisteredPlayerId(docRef.id);
@@ -308,10 +360,10 @@ const PlayerMobile = () => {
         setEraseModalOpen(false);
         const filteredPlayer = players.filter(player => player.id === registeredPlayerId);
         console.log(filteredPlayer);
-        if (filteredPlayer.length > 0) {
-            const theRef = doc(database, `playeradmin/players/jspedrogarcia@gmail.com`, filteredPlayer[0].id);
-            await deleteDoc(theRef)
-        }
+        // if (filteredPlayer.length > 0) {
+        //     const theRef = doc(database, `playeradmin/players/jspedrogarcia@gmail.com`, filteredPlayer[0].id);
+        //     await deleteDoc(theRef)
+        // }
     }
     const handleWillSave = () => {
         updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { willText: willText})
@@ -362,6 +414,7 @@ const PlayerMobile = () => {
         updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
     }
     const handleActionSave = () => {
+        setFauxTextBox('')
         if (playerCurrentRole[0].wakeTrigger === 6) {
             if (currentDay % 2 === 1) {
                 
@@ -494,6 +547,7 @@ const PlayerMobile = () => {
     }
     const handleSkipTurn = () => {
         // Make it so the pending turns into completed
+        setFauxTextBox('');
         updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
     }
     return (
@@ -513,7 +567,22 @@ const PlayerMobile = () => {
             </div>
             </>
             )
-            :
+                    :
+                playerCurrentInformation[0]?.activePlayer === false ? (
+                        <div className="waitingForMatch">
+                                <p>
+                                Bem-vindo {playerCurrentInformation[0]?.playerName}!
+                                </p>
+                                Você está cadastrado, porém está desativado e não irá participar dessa rodada, caso for participar, avise seu adm!
+                                <div className="loading">
+                                <img src={ghostSVG}></img>
+                                </div>
+                                <div className="interactiveButtons">
+                                    {/* <ButtonMobile clickFunctionality={() => setEraseModalOpen(true)} svgChoice={xSVG} /> */}
+
+                                </div>
+                        </div>
+                    ) :
             gameState === 'inicio' ?
             (
                             <div className="waitingForMatch">
@@ -525,7 +594,7 @@ const PlayerMobile = () => {
                                 <img src={loadingEffect}></img>
                                 </div>
                                 <div className="interactiveButtons">
-                                    <button className="intButton" onClick={() => setEraseModalOpen(true)}><img src={xSVG}></img></button>
+                                    <ButtonMobile clickFunctionality={() => setEraseModalOpen(true)} svgChoice={xSVG} />
 
                                 </div>
             </div>
@@ -540,20 +609,22 @@ const PlayerMobile = () => {
                                 </div>
                                 ) : (null)}
                                 <div className="interactiveButtons">
-                                    <button className="intButton" onClick={() => setCardOpen(true)}><img src={cardSVG}></img></button>
+                                    <ButtonMobile clickFunctionality={() => setCardOpen(true)} svgChoice={cardSVG} />
+
                                 </div>
 
             </div>
             ) :
             gameState === 'dia' && playerCurrentRole.length > 0 ? (
-                                <div>
+                                <div className="widthNightAdjust">
                                     <h2 className="header">Dia {currentDay} </h2>
                                     <div className="interactiveButtons">
-                                    <button className="intButton" onClick={() => setHiddenPrivateInfo(hiddenPrivateInfo => !hiddenPrivateInfo)}><img src={hiddenPrivateInfo? eyeCloseSVG : eyeSVG}></img></button>
-                                    <button className="intButton" onClick={() => setCardOpen(true)}><img src={cardSVG}></img></button>
-                                        <button className="intButton" onClick={() => setWillOpen(true)}><img src={scrollSVG}></img></button>
-                                        <button className="intButton" onClick={() => setPlayerListingOpen(true)}><img src={lifeDeadSVG}></img></button>
-                                    <button className="intButton" onClick={() => setQuestionOpen(true)}><img src={questionSVG}></img></button>
+                                    <ButtonMobile clickFunctionality={() => setHiddenPrivateInfo(hiddenPrivateInfo => !hiddenPrivateInfo)} svgChoice={hiddenPrivateInfo? eyeCloseSVG : eyeSVG} />
+                                    <ButtonMobile clickFunctionality={() => setCardOpen(true)} svgChoice={cardSVG} />
+                                    <ButtonMobile clickFunctionality={() => setWillOpen(true)} svgChoice={scrollSVG} />
+                                    <ButtonMobile clickFunctionality={() => setPlayerListingOpen(true)} svgChoice={lifeDeadSVG} />
+                                    <ButtonMobile clickFunctionality={() => setQuestionOpen(true)} svgChoice={questionSVG} />
+                                        
                                     </div>
                                     <div className="playerNoticeBox">
                                         <div>Informações Importantes</div>
@@ -569,7 +640,12 @@ const PlayerMobile = () => {
                                             ) : (null)}
                                         {playerCurrentInformation[0].buff ? (
                                             <div>Efeito Positivo: {playerCurrentInformation[0].buff}</div>
-                                            ) : (null)}
+                                                    ) : (null)}
+                                                    {playerCurrentInformation[0].cultChoice ? (
+                                                        <div>
+                                                            Ocultismo: Agora você faz parte do culto.
+                                                    </div>
+                                        ): (null)}
                                             </>)}
                                             </div>
                                     </div>
@@ -580,7 +656,8 @@ const PlayerMobile = () => {
                                             Nome: {playerCurrentInformation[0].playerName}
                                         </p>
                                         <p>
-                                            Filliação: {playerCurrentInformation[0].filliation === 'town' ? 'Cidade' : playerCurrentInformation[0].filliation === 'the family'? 'A Familia' : playerCurrentInformation[0].filliation === 'coven'? 'Coven' : playerCurrentInformation[0].filliation === 'neutral' ? 'Neutro' : playerCurrentInformation[0].filliation === 'horsemen' ? 'Cavaleiros do Apocalipse' : ''  }
+                                                Filliação: {playerCurrentInformation[0].filliation === 'town' ? 'Cidade' : playerCurrentInformation[0].filliation === 'the family' ? 'A Familia' :
+                                                playerCurrentInformation[0].filliation === 'cult' ? 'Culto' : playerCurrentInformation[0].filliation === 'coven' ? 'Coven' : playerCurrentInformation[0].filliation === 'neutral' ? 'Neutro' : playerCurrentInformation[0].filliation === 'horsemen' ? 'Cavaleiros do Apocalipse' : ''}
                                         </p>
                                         <p>
                                             Função: {playerCurrentInformation[0].role}
@@ -638,13 +715,13 @@ const PlayerMobile = () => {
                                     ):(null)}
                                 </div>
             ) : gameState === 'noite' && playerCurrentRole.length > 0 && playerCurrentInformation[0].life === 'alive' ? (
-                                    <div>
+                                    <div className="widthNightAdjust">
 
                                     <div className="header">Noite {currentDay} </div>
                                     <div className="interactiveButtons">
-                                    <button className="intButton" onClick={() => setCardOpen(true)}><img src={cardSVG}></img></button>
-                                        <button className="intButton" onClick={() => setWillOpen(true)}><img src={scrollSVG}></img></button>
-                                    <button className="intButton" onClick={() => setQuestionOpen(true)}><img src={questionSVG}></img></button>
+                                    <ButtonMobile clickFunctionality={() => setCardOpen(true)} svgChoice={cardSVG} />
+                                    <ButtonMobile clickFunctionality={() => setWillOpen(true)} svgChoice={scrollSVG} />
+                                    <ButtonMobile clickFunctionality={() => setQuestionOpen(true)} svgChoice={questionSVG} />
                                     </div>
         
                                         <div className="nightAction">
@@ -735,8 +812,9 @@ const PlayerMobile = () => {
                                             </div>
 
                                                 </div>) : (null)}
-                                        {playerCurrentInformation[0]?.filliation === 'the family' && playerCurrentInformation[0]?.life === "alive" ? (
-                                        <div className="mafiaInfoBox">
+                                            {/* Informativo de Familia */}
+                                            {playerCurrentInformation[0]?.filliation === 'the family' && playerCurrentInformation[0]?.life === "alive" ? (
+                                            <div className="mafiaInfoBox">
                                             <div className="fadeMe" hidden={hiddenPrivateInfo}>Centro da Familia</div>
                                             <div className="mafiaInfo fadeMe" hidden={hiddenPrivateInfo}>
                                             {alivePlayers.filter((player) => player.filliation === 'the family').map(player => (
@@ -747,9 +825,28 @@ const PlayerMobile = () => {
                                             </div>
 
                                         </div>
-                                    ):(null)}
-                                    {playerCurrentInformation[0]?.filliation === 'horsemen' && playerCurrentInformation[0]?.life === "alive" ? (
-                                        <div className="mafiaInfoBox">
+                                            ) : (null)}
+                                            {(playerCurrentInformation[0]?.filliation === 'cult' && playerCurrentInformation[0]?.life === "alive") || (playerCurrentInformation[0]?.cultChoice === true && playerCurrentInformation[0]?.life === "alive") ? (
+                                            <div className="mafiaInfoBox">
+                                            <div className="fadeMe" hidden={hiddenPrivateInfo}>Centro do Culto</div>
+                                            <div className="mafiaInfo fadeMe" hidden={hiddenPrivateInfo}>
+                                                {alivePlayers.filter((player) => player.filliation === "cult").map(player => (
+                                                    <span>
+                                                        <p>{player.playerName} - Ocultista</p>
+                                                    </span>
+                                                ))}    
+                                            {alivePlayers.filter((player) => player.cultChoice === true).map(player => (
+                                                <span>
+                                                    <p>{player.playerName} - Seguidor do Culto</p>
+                                                </span>
+                                            ))}    
+                                            </div>
+
+                                        </div>
+                                            ) : (null)}
+                                            {/* Informativo de Cavaleiros */}
+                                            {playerCurrentInformation[0]?.filliation === 'horsemen' && playerCurrentInformation[0]?.life === "alive" ? (
+                                            <div className="mafiaInfoBox">
                                             <div className="fadeMe" hidden={hiddenPrivateInfo}>Centro dos Cavaleiros</div>
                                             <div className="mafiaInfo fadeMe" hidden={hiddenPrivateInfo}>
                                             {alivePlayers.filter((player) => player.filliation === 'horsemen').map(player => (
@@ -761,6 +858,7 @@ const PlayerMobile = () => {
 
                                         </div>
                                             ) : (null)}
+                                            {/* Chat particular de quem é do mal */}
                                             {playerCurrentInformation[0].filliation === 'horsemen' || playerCurrentInformation[0].filliation === 'the family' ? (
                                                 <div className="evilChatBox">
                                                     <div>Chat Privado</div>
@@ -772,25 +870,35 @@ const PlayerMobile = () => {
                                                     ))}
                                                     </div>
                                                     <div className="evilChatButtons">
-                                                    <input type="text" value={mensagemdoMal } onChange={(e) => setMensagemdoMal(e.target.value)}/>
-                                                    <button type="button" className="button" onClick={sendEvilMessage}>Enviar Mensagem</button>
+                                                    <input type="text" value={mensagemdoMal} onChange={(e) => setMensagemdoMal(e.target.value)}/>
+                                                    <button type="button" className="button" onClick={sendEvilMessage} disabled={mensagemdoMal === ''}>Enviar Mensagem</button>
                                                     </div>
                                                 </div>
-                                    ) : (null)}
+                                            ) : (null)}
                                             {playerCurrentInformation[0].action === "pending" && (
-                                                <div>
+                                                <div className="basicFlex">
                                                     {playerCurrentRole[0].role === 'padeira' && playerCurrentInformation[0]?.actionforRoleCounter > 0 && (
                                                     <button className="button" onClick={handlePadeiraSave}>Curar Jogador!</button>
                                                     )}
                                                     {playerCurrentRole[0].role === 'piromaniaco' &&(
                                                     <button className="button" onClick={piromaniacoFire}>Tacar fogo!</button>
                                                     )}
-
+                                                    {playerCurrentRole[0].filliation === 'neutral' || playerCurrentRole[0].filliation === 'cult' || playerCurrentRole[0].filliation === 'town' ? (
+                                                        <div className="mafiaInfoBox fadeMe">
+                                                            <div>
+                                                                {copiedText}
+                                                            </div>
+                                                            <input type="text" value={fauxTextBox} onChange={(e) => setFauxTextBox(e.target.value)} placeholder="Copie o texto acima" />
+                                                            <div className="littleinformativo">
+                                                                Você só pode completar sua ação se preencher a caixa acima!
+                                                            </div>
+                                                        </div>
+                                                    ) : (null)}
                                                     {(currentDay === 1 && noActionsNight1.includes(playerCurrentInformation[0].role)) || playerCurrentRole[0].wakeTrigger === 0 ? (null) : (
 
-                                                        <button className="button" onClick={handleActionSave}>{playerCurrentRole[0].role === 'padeira' ? 'Encerrar Jogada' : 'Confirmar Ação' }</button>
+                                                        <button disabled={playerCurrentRole[0].filliation === 'neutral' || playerCurrentRole[0].filliation === 'cult' || playerCurrentRole[0].filliation === 'town' ? fauxTextBox !== copiedText : false} className="button" onClick={handleActionSave}>{playerCurrentRole[0].role === 'padeira' ? 'Encerrar Jogada' : 'Confirmar Ação' }</button>
                                                     )}
-                                                    <button className="button" onClick={handleSkipTurn}>{playerCurrentRole[0].wakeTrigger === 0 ? 'Encerrar Noite' : 'Pular Vez'}</button>
+                                                    <button disabled={playerCurrentRole[0].filliation === 'neutral' || playerCurrentRole[0].filliation === 'cult' || playerCurrentRole[0].filliation === 'town' ? fauxTextBox !== copiedText : false} className="button" onClick={handleSkipTurn}>{playerCurrentRole[0].wakeTrigger === 0 ? 'Encerrar Noite' : 'Pular Vez'}</button>
                                                 </div>
                                             )}
                                             {playerCurrentInformation[0].action === "complete" && (
@@ -866,15 +974,15 @@ const PlayerMobile = () => {
                     <div className="playerListingModal">
                         <div className="listing-inner-modal scrollable">
                             Jogadores Vivos
-                        <p>{alivePlayers.map((player) => (
-                            <p>{player.playerName }</p>
-                            )) }</p>
+                        <span>{alivePlayers.map((player) => (
+                            <p key={player.id}>{player.playerName }</p>
+                            )) }</span>
                         </div>
                         <div className="listing-inner-modal scrollable">
                             Jogadores Mortos
-                        <p>{deadPlayers.map((player) => (
-                            <p>{player.playerName }</p>
-                            )) }</p>
+                        <span>{deadPlayers.map((player) => (
+                            <p key={player.id}>{player.playerName}</p>
+                            )) }</span>
                         </div>
                     </div>
                 <button className="button fixedButton" onClick={() => setPlayerListingOpen(false)}>Fechar</button>

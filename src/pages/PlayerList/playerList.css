@@ -35,3 +35,9 @@
         flex-direction: column;
     }
 }
+
+
+.playerListTitle{
+    display: flex;
+    align-items: center;
+}

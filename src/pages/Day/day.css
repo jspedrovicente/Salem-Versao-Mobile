@@ -93,6 +93,9 @@ p{
 .horsies{
     color: rgb(238, 235, 182);
 }
+.cultisties{
+    color: rgb(209, 75, 75);
+}
 .alivePlayersConfig{
     display: flex;
     margin-left: 10px;

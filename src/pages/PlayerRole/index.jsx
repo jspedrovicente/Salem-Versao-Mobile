@@ -12,6 +12,7 @@ const PlayerRole = () => {
     const [townRole, setTownRole] = useState([]);
     const [covenRole, setCovenRole] = useState([]);
     const [horsemenRole, setHorsemenRole] = useState([]);
+    const [cultRole, setCultRole] = useState([]);
     const [mafiaRole, setMafiaRole] = useState([]);
     const [user, setUser] = useState({});
     const [allRoles, setAllRoles] = useState([]);
@@ -32,16 +33,20 @@ const PlayerRole = () => {
             const unsub = onSnapshot(collection(database, `playeradmin/players/${data.email}`), (snapshot) => {
                 let list = [];
                 snapshot.forEach((doc) => {
-                    list.push({
-                        id: doc.id,
-                        key: doc.id,
-                        playerName: doc.data().playerName,
-                        victoryPoints: doc.data().victoryPoints,
-                        role: doc.data().role,
-                        filliation: doc.data().filliation,
-                        actionForRoleCounter: doc.data()?.actionForRoleCounter,
+                    if (doc.data().activePlayer === true) {
                         
-                    })
+                        list.push({
+                            id: doc.id,
+                            key: doc.id,
+                            playerName: doc.data().playerName,
+                            victoryPoints: doc.data().victoryPoints,
+                            role: doc.data().role,
+                            filliation: doc.data().filliation,
+                            actionForRoleCounter: doc.data()?.actionForRoleCounter,
+                            activePlayer: doc.data().activePlayer,
+                            
+                        })
+                    }
                 })
                 setPlayerList(list);
             })
@@ -119,6 +124,24 @@ const PlayerRole = () => {
             setHorsemenRole(roles);
             
         })
+        const cultSnapshot = onSnapshot(collection(database, "gamedata/roles/cult"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "cult",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
+
+                })
+            })
+            setCultRole(roles);
+            
+        })
         const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
             let roles = [];
             snapshot.forEach((doc) => {
@@ -135,19 +158,18 @@ const PlayerRole = () => {
                 })
             })
             setNeutralRole(roles);
-            console.log(roles);
             
         })
     }, [])
     useEffect(() => {
 
-        function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole) {
-            setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole])
+        function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole, cultRole) {
+            setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole, ...cultRole])
            
         }
-        addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole);
+        addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole);
 
-    }, [covenRole, mafiaRole, townRole, horsemenRole, neutralRole])
+    }, [covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole])
     const handleConfirm = async (e) => {
         e.preventDefault();
         const chosenPlayer = playerList.filter(player => player.playerName === currentPlayer);
@@ -215,7 +237,11 @@ const PlayerRole = () => {
         updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "entregueCartas"})
 
     }
+    const handleFilliationChange = (e) => {
+        setCurrentRole('?')
+        setCurrentFilliation(e.target.value)
 
+    }
     const addFunctionToRole = (addedRole) => {
         setRandomizerChosenRoles([...randomizerChosenRoles, addedRole]);
         console.log(randomizerChosenRoles);
@@ -270,7 +296,7 @@ const PlayerRole = () => {
                                 {mafiaRole.map(role => (
                                     role.enabledRole ? (
                                 
-                                <span className="eachRole mafiaies">
+                                <span className="eachRole mafiaies" key={role.id}>
                                <label >{role.role} 
                                 </label>
                                             <div className="buttonSection">
@@ -281,14 +307,14 @@ const PlayerRole = () => {
                                 </div>
                                 </span>) : (null)
                             ))}
-                        </div>
-                        <div className="selector-category">
-                            <h4>Coven - Desabilitadas</h4>
+                                </div>
+                                <div className="selector-category">
+                            <h4>Culto</h4>
                             <hr />
-                                    {covenRole.map(role => (
+                                    {cultRole.map(role => (
                                     role.enabledRole ? (
                                 
-                                <span className="eachRole covenies">
+                                <span className="eachRole cultisties" key={role.id}>
                                <label >{role.role}
                                 </label>
                                 <div className="buttonSection">
@@ -300,6 +326,26 @@ const PlayerRole = () => {
                                 </span>):(null)
                             ))}
                                 </div>
+                                <div className="selector-category">
+                                    
+                            <h4>Coven - Desabilitadas</h4>
+                            <hr />
+                                    {covenRole.map(role => (
+                                    role.enabledRole ? (
+                                
+                                <span className="eachRole covenies" key={role.id}>
+                               <label >{role.role}
+                                </label>
+                                <div className="buttonSection">
+                                {role.multiple? 'M' : 'U'}
+                                <button onClick={() => removeFunctionToRole(role.role)}>-</button>
+                                <input type="number" readOnly value={randomizerChosenRoles.filter(x => x === role.role).length} />
+                                <button onClick={ () => addFunctionToRole(role.role)}>+</button>
+                                </div>
+                                </span>):(null)
+                            ))}
+                                </div>
+                        
                             </div>
                             <div>
                                 
@@ -309,7 +355,7 @@ const PlayerRole = () => {
                                     {horsemenRole.map(role => (
                                     role.enabledRole ? (
                                 
-                                <span className="eachRole horsies">
+                                <span className="eachRole horsies" key={role.id}>
                                <label >{role.role}
                                 </label>
                                 <div className="buttonSection">
@@ -327,7 +373,7 @@ const PlayerRole = () => {
                                     {neutralRole.map(role => (
                                     role.enabledRole ? (
                                 
-                                <span className="eachRole neutraies">
+                                <span className="eachRole neutraies" key={role.id}>
                                <label >{role.role}
                                 </label>
                                 <div className="buttonSection">
@@ -374,10 +420,11 @@ const PlayerRole = () => {
                         </label>
                         <label >
                             Filiação:
-                            <select name="affiliation" id="affiliation" value={currentFilliation} onChange={(e) => setCurrentFilliation(e.target.value)} >
+                            <select name="affiliation" id="affiliation" value={currentFilliation} onChange={(e) => handleFilliationChange(e)} >
                                     <option value="town" id="town">Cidade</option>
                                     <option value="coven" id="coven" className="coven">Coven</option>
                                     <option value="the family" className="mafia">A Familia</option>
+                                    <option value="cult" className="cult">Culto</option>
                                     <option value="horsemen" className="cavaleirosDoApocalipse">Cavaleiros do Apocalipse</option>
                                     <option value="neutral" className="neutral">Neutros</option>
                             </select>
@@ -385,6 +432,8 @@ const PlayerRole = () => {
                         <label >
                             Função:
                             <select name="role" id="role" value={currentRole} onChange={(e) => setCurrentRole(e.target.value)}>
+                                <option value="?" id="town" disabled>Selecione</option>
+
                                 {allRoles.filter(role => role.filliation.includes(currentFilliation)).map(filteredrole => (
                                     <option key={filteredrole.role}>{filteredrole.role}</option>
                                 ))} ;
@@ -392,7 +441,7 @@ const PlayerRole = () => {
 
                             </select>
                         </label>
-                        <button type="submit" className="button" onClick={handleConfirm}>Confirmar</button>
+                        <button type="submit" className="button" onClick={handleConfirm} disabled={currentRole === '?'}>Confirmar</button>
                         <button type="button" className="button" onClick={handleReset}>Resetar Todos</button>
                         <button type="button" className="button" onClick={() => setIsManualRandomizerOpen(true)}>Gerador Aleatorio Manual</button>
                         <Link to='/statuses' target='_blank' rel='noopener noreferrer' />
@@ -413,7 +462,7 @@ const PlayerRole = () => {
                     </div>
                     <div className="evil">
                         <h4>
-                        A Familia/Coven/Cavaleiros
+                        A Familia/Cavaleiros/Culto
                         </h4>
                         <div className="playerRole-evil card-border scrollable">
                         {playerList.filter(player => player.filliation.includes("the family")).map(filteredPlayer => (
@@ -423,6 +472,9 @@ const PlayerRole = () => {
                             <p key={filteredPlayer.id}>{filteredPlayer.playerName} - {filteredPlayer.role} <button className="delete-button" onClick={() => handleEraseSpecificPlayer(filteredPlayer.id)}>x</button></p>
                                 ))}
                         {playerList.filter(player => player.filliation.includes("horsemen")).map(filteredPlayer => (
+                            <p key={filteredPlayer.id}>{filteredPlayer.playerName} - {filteredPlayer.role} <button className="delete-button" onClick={() => handleEraseSpecificPlayer(filteredPlayer.id)}>x</button></p>
+                                ))}
+                        {playerList.filter(player => player.filliation.includes("cult")).map(filteredPlayer => (
                             <p key={filteredPlayer.id}>{filteredPlayer.playerName} - {filteredPlayer.role} <button className="delete-button" onClick={() => handleEraseSpecificPlayer(filteredPlayer.id)}>x</button></p>
                                 ))}
                         </div>

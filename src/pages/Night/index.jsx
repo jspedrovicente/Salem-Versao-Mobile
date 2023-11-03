@@ -26,11 +26,12 @@ const Night = () => {
     const [mafiaRole, setMafiaRole] = useState([]);
     const [neutralRole, setNeutralRole] = useState([]);
     const [horsemenRole, setHorsemenRole] = useState([]);
+    const [cultRole, setCultRole] = useState([]);
     const [covenRole, setCovenRole] = useState([]);
     const [allRoles, setAllRoles] = useState([]);
-    const [evilChatLog, setEvilChatLog] = useState([]);
     const navigateToMorning = useNavigate();
-    
+    const [allMessages, setAllMessages] = useState([]);
+    const [hiddenEvilChat, setHiddenEvilChat] = useState([]);
     // Night Manipulation
     const [currentDay, setCurrentDay] = useState(1);
     const [notifierModalContent, setNotifierModalContent] = useState('');
@@ -41,7 +42,6 @@ const Night = () => {
     const [mobilePlayerActionsSingle, setMobilePlayerActionsSingle] = useState([])
     // Night actions that do not transfer
     const [currentDayTemp, setCurrentDayTemp] = useState([]);
-    const [deadChatLogs, setDeadChatLogs] = useState([]);
 
     useEffect(() => {
         const loadUserInformation = () => {
@@ -56,20 +56,29 @@ const Night = () => {
             const x = onSnapshot(collection(database, `playeradmin/players/${user.email}`), (snapshot) => {
                 let list = [];
                 snapshot.forEach((doc) => {
-                    list.push({
-                        id: doc.id,
-                        key: doc.id,
-                        playerName: doc.data().playerName,
-                        victoryPoints: doc.data().victoryPoints,
-                        role: doc.data().role,
-                        filliation: doc.data().filliation,
-                        life: doc.data().life,
-                        action: doc.data().action,
-                        wakeOrder: doc.data().wakeOrder,
-                        buff: doc.data().buff,
-                        debuff: doc.data().debuff,
-                        doused: doc.data().doused
-                    })
+                    if (doc.data().activePlayer === true) {
+                        list.push({
+                            id: doc.id,
+                            key: doc.id,
+                            playerName: doc.data().playerName,
+                            victoryPoints: doc.data().victoryPoints,
+                            role: doc.data().role,
+                            filliation: doc.data().filliation,
+                            life: doc.data().life,
+                            action: doc.data().action,
+                            wakeOrder: doc.data().wakeOrder,    
+                            willText: doc.data().willText,
+                            clownBomb: doc.data().clownBomb,
+                            pistoleiroMark: doc.data().pistoleiroMark,
+                            buff: doc.data().buff,
+                            debuff: doc.data().debuff,
+                            executorTarget: doc.data().executorTarget,
+                            newResponse: doc.data().newResponse,
+                            doused: doc.data().doused,
+                            actionforRoleCounter: doc.data().actionforRoleCounter,
+                            cultChoice: doc.data().cultChoice
+                        })
+                    }
                 })
                 setPlayers(list);
                 setAlivePlayers(list.sort((a, b) => a.wakeOrder - b.wakeOrder).filter(player => player.life.includes("alive")))
@@ -89,6 +98,7 @@ const Night = () => {
     }, [user.email]);
 
     useEffect(() => {
+        
         const townSnapshot = onSnapshot(collection(database, "gamedata/roles/town"), (snapshot) => {
             let roles = [];
             snapshot.forEach((doc) => {
@@ -97,25 +107,47 @@ const Night = () => {
                     role: doc.data().role,
                     skill: doc.data().skill,
                     special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
                 })
             })
             setTownRole(roles)
 
         })
-        const mafiaSnapshot = onSnapshot(collection(database, "gamedata/roles/mafia"), (snapshot) => {
+        const mafiaSnapshot = onSnapshot(collection(database, "gamedata/roles/the family"), (snapshot) => {
             let roles = [];
             snapshot.forEach((doc) => {
                 roles.push({
-                    filliation: "mafia",
+                    filliation: "the family",
                     role: doc.data().role,
                     skill: doc.data().skill,
                     special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
-
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
                 })
             })
             setMafiaRole(roles);
+        })
+        const covenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "coven",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
+                })
+            })
+            setCovenRole(roles);
+            
         })
         const horsemenSnapshot = onSnapshot(collection(database, "gamedata/roles/horsemen"), (snapshot) => {
             let roles = [];
@@ -125,11 +157,32 @@ const Night = () => {
                     role: doc.data().role,
                     skill: doc.data().skill,
                     special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
 
                 })
             })
             setHorsemenRole(roles);
+            
+        })
+        const cultSnapshot = onSnapshot(collection(database, "gamedata/roles/cult"), (snapshot) => {
+            let roles = [];
+            snapshot.forEach((doc) => {
+                roles.push({
+                    filliation: "cult",
+                    role: doc.data().role,
+                    skill: doc.data().skill,
+                    special: doc.data().special,
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
+
+                })
+            })
+            setCultRole(roles);
             
         })
         const neutralSnapshot = onSnapshot(collection(database, "gamedata/roles/neutral"), (snapshot) => {
@@ -140,36 +193,26 @@ const Night = () => {
                     role: doc.data().role,
                     skill: doc.data().skill,
                     special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
+                    wakeOrder: doc.data().wakeOrder,
+                    actionforRoleCounter: doc.data()?.actionforRoleCounter,
+                    enabledRole: doc.data().enabledRole,
+                    multiple: doc.data().multiple
 
                 })
             })
             setNeutralRole(roles);
             
         })
-        const covenSnapshot = onSnapshot(collection(database, "gamedata/roles/coven"), (snapshot) => {
-            let roles = [];
-            snapshot.forEach((doc) => {
-                roles.push({
-                    filliation: "coven",
-                    role: doc.data().role,
-                    skill: doc.data().skill,
-                    special: doc.data().special,
-                    wakeOrder: doc.data().wakeOrder
-
-                })
-            })
-            setCovenRole(roles);
-            
-        })
     }, [])
     useEffect(() => {
-        function addAllRoles(townRole, mafiaRole, horsemenRole, neutralRole, covenRole) {
-            setAllRoles([...townRole, ...mafiaRole, ...horsemenRole, ...neutralRole, ...covenRole,])
+
+        function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole, cultRole) {
+            setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole, ...cultRole])
            
         }
-        addAllRoles(townRole, mafiaRole, horsemenRole, neutralRole, covenRole);
-    }, [horsemenRole, mafiaRole, neutralRole, covenRole, townRole])
+        addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole);
+
+    }, [covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole])
     useEffect(() => {
         const loadRememberedData = () => {
             const snapshots = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/mobilePlayerActions/mobilePlayerActionsSingle`), (snapshot) => {
@@ -191,6 +234,27 @@ const Night = () => {
         }
         loadRememberedData();
     }, [user.email])
+
+    useEffect(() => {
+        const mesagesSnapshot = onSnapshot(collection(database, `playeradmin/chatsLog/jspedrogarcia@gmail.com`),
+        (snapshot) => {
+            let currentMessages = [];
+            snapshot.forEach((doc) => {
+                currentMessages.push({id: doc.id, autor: doc.data().autor, message: doc.data().mensagem, horario: doc.data().horario})
+            })
+            const sortedMessages = currentMessages.sort((a, b) => a.horario - b.horario)
+            setAllMessages(sortedMessages)
+        })
+    const familyMessageSnapshot = onSnapshot(collection(database, `playeradmin/familyChatLog/jspedrogarcia@gmail.com`),
+        (snapshot) => {
+            let currentMessages = [];
+            snapshot.forEach((doc) => {
+                currentMessages.push({id: doc.id, autor: doc.data().autor, message: doc.data().mensagem, horario: doc.data().horario})
+            })
+            const sortedMessages = currentMessages.sort((a, b) => a.horario - b.horario)
+            setHiddenEvilChat(sortedMessages)
+        })
+    }, [])
     const interruptMusicPlaying = () => {
         stopNightSound();
     }
@@ -199,7 +263,7 @@ const Night = () => {
         let rolesImunetoBlocks = ['meretriz', 'taberneiro', 'miragem', 'executor', 'caloteira'];
         let rolesThatAttackBlockers = ['assassino em serie', 'mestre', 'lobisomen', 'morte', 'vigilante'];
         let rolesImunetoAttacks = ['piromaniaco', 'assassino em serie', 'sobrevivente']
-        let consideredEvilRoles = ['fome', 'guerra', 'morte', 'estranho', 'amaldicoadora', 'feiticeira benevolente', 'parasita', 'matriarca', 'mestre', 'mordomo', 'zelador', 'caloteira', 'piromaniaco', 'assassino em serie', 'bobo da corte', 'executor', 'lobisomen', 'medico da peste', 'palhaco', 'pistoleiro' ]
+        let consideredEvilRoles = ['fome', 'guerra', 'morte', 'estranho', 'amaldicoadora', 'feiticeira benevolente', 'parasita', 'matriarca', 'mestre', 'mordomo', 'zelador', 'caloteira', 'piromaniaco', 'assassino em serie', 'bobo da corte', 'executor', 'lobisomen', 'medico da peste', 'palhaco', 'pistoleiro', 'ocultista' ]
         let blockedTargets = [];
         let attackingAction = [];
         let visitsThatOccured = [];
@@ -426,6 +490,10 @@ const Night = () => {
                         break;
                     case 'guerra':
                         break;
+                    case 'ocultista':
+                        updateDoc((doc(database, "playeradmin", "players", user.email, Sactions[i].targetId)), { cultChoice: true });
+
+                        break;
                     case 'FILLER HERE FOR ME TO REMEMBER':
                         // Mafia is getting written together, same as coven!
                         break;
@@ -501,7 +569,7 @@ const Night = () => {
 
             if (murderedPlayers[i].attackerRole === 'mestre' && zeladorTarget === true) {
             const killThisMFucker = players.filter((player) => player.playerName === murderedPlayers[i].killedPlayerName);
-                await updateDoc(doc(database, "playeradmin", "players", user.email, killThisMFucker[0].id), { life: "dead", newResponse: `Você está morto, sua função não poderá ser revelada e nem o agressor.` })
+                await updateDoc(doc(database, "playeradmin", "players", user.email, killThisMFucker[0].id), { life: "dead", cultChoice: false, newResponse: `Você está morto, sua função não poderá ser revelada e nem o agressor.` })
                 await addDoc(eventsDatabase, {
                     killedPlayer: murderedPlayers[i].killedPlayerName,
                     killedPlayerRole: 'O Zelador Esteve por aqui!',
@@ -510,7 +578,7 @@ const Night = () => {
             } else {
                 
                 const killThisMFucker = players.filter((player) => player.playerName === murderedPlayers[i].killedPlayerName);
-                await updateDoc(doc(database, "playeradmin", "players", user.email, killThisMFucker[0].id), { life: "dead", newResponse: `Você está morto, quem te matou foi o ${murderedPlayers[i].attackerRole}` })
+                await updateDoc(doc(database, "playeradmin", "players", user.email, killThisMFucker[0].id), { life: "dead", cultChoice: false,  newResponse: `Você está morto, quem te matou foi o ${murderedPlayers[i].attackerRole}` })
                 await addDoc(eventsDatabase, {
                     killedPlayer: murderedPlayers[i].killedPlayerName,
                     killedPlayerRole: murderedPlayers[i].killedPlayerRole,
@@ -528,8 +596,11 @@ const Night = () => {
         await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "dayCounter", "dayCounter", "dayCounter"), { currentDay: currentDay + 1 });
 
         // Erasing the DeadChatlogs
-        for (let i = 0; i < deadChatLogs.length; i++){
-            await deleteDoc(doc(database, `playeradmin/chatsLog/jspedrogarcia@gmail.com/${deadChatLogs[i].id}`))
+        for (let i = 0; i < allMessages.length; i++){
+            await deleteDoc(doc(database, `playeradmin/chatsLog/jspedrogarcia@gmail.com/${allMessages[i].id}`))
+        }
+        for (let i = 0; i < hiddenEvilChat.length; i++){
+            await deleteDoc(doc(database, `playeradmin/familyChatLog/jspedrogarcia@gmail.com/${hiddenEvilChat[i].id}`))
         }
 
         // Declaring all the visits
@@ -573,10 +644,6 @@ const Night = () => {
         for (let i = 0; i < players.length; i++){
             updateDoc(doc(database, `playeradmin/players/${user.email}/${players[i].id}`), { newResponse: "", buff: "", debuff: "", clownBomb: false, pistoleiroMark: false });
         }
-        for (let i = 0; i < evilChatLog.length; i++){
-            deleteDoc(doc(database, `playeradmin/familyChatLog/jspedrogarcia@gmail.com/${evilChatLog[i].id}`))
-
-        }
 
     }
     return (
@@ -599,7 +666,31 @@ const Night = () => {
                             })}
                         </div>
                     </div>
-                    
+                    <h4>
+                        Chats Ativos
+                    </h4>
+                    <div className="card-border huge-container chatsAtivosNight scrollable">
+                        <div className="card-border innerBox scrollable">
+                        <h4 className="midTitle">
+                            Chat Familia/Cavaleiros
+                        </h4>
+                            {hiddenEvilChat.map(message => (
+                                <span>
+                                    <p>{message.autor}: {message.message }</p>
+                                </span>
+                            ))}
+                        </div>
+                        <div className="card-border innerBox scrollable">
+                        <h4 className="midTitle">
+                            Chat Mortos
+                        </h4>
+                            {allMessages.map(message => (
+                                <span>
+                                    <p>{message.autor}: {message.message }</p>
+                                </span>
+                            ))}
+                        </div>
+                </div>
                 </div>
                 <div className="night-right">
 

@@ -16,3 +16,7 @@
     width: 90%;
     justify-content: space-between;
 }
+
+.playerListButtons button{
+    margin-right: 10px;
+}
