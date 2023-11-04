@@ -38,7 +38,7 @@ const PlayerMobile = () => {
     const [currentDay, setCurrentDay] = useState(0);
     const [willText, setWillText] = useState('');
     const [fauxTextBox, setFauxTextBox] = useState('');
-    const [copiedText, setCopiedText] = useState('eu sou jogador beta de aquisicao de salem');
+    const [copiedText, setCopiedText] = useState('Eu sou jogador beta de salem');
     const [target1, setTarget1] = useState('');
     const [target2, setTarget2] = useState('');
     const [weaponChoice, setWeaponChoice] = useState('');
@@ -70,7 +70,6 @@ const PlayerMobile = () => {
                             role: doc.data().role,
                             filliation: doc.data().filliation,
                             image: doc.data().image,
-                            willText: doc.data().willText,
                             action: doc.data().action,
                             newResponse: doc.data().newResponse,
                             wakeOrder: doc.data().wakeOrder,
@@ -95,7 +94,6 @@ const PlayerMobile = () => {
                                 role: doc.data().role,
                                 filliation: doc.data().filliation,
                                 image: doc.data().image,
-                                willText: doc.data().willText,
                                 action: doc.data().action,
                                 newResponse: doc.data().newResponse,
                                 wakeOrder: doc.data().wakeOrder,
@@ -114,7 +112,6 @@ const PlayerMobile = () => {
                                 const chosenRole = allRoles.filter((role) => role.role === playerInfo[0].role)
                                 setPlayerCurrentRole(chosenRole);
                                 console.log(chosenRole)
-                                setWillText(playerInfo[0].willText);
                             }
                             console.log(playerInfo);
                             setPlayerCurrentInformation(playerInfo);
@@ -360,14 +357,12 @@ const PlayerMobile = () => {
         setEraseModalOpen(false);
         const filteredPlayer = players.filter(player => player.id === registeredPlayerId);
         console.log(filteredPlayer);
-        // if (filteredPlayer.length > 0) {
-        //     const theRef = doc(database, `playeradmin/players/jspedrogarcia@gmail.com`, filteredPlayer[0].id);
-        //     await deleteDoc(theRef)
-        // }
+        if (filteredPlayer.length > 0) {
+            const theRef = doc(database, `playeradmin/players/jspedrogarcia@gmail.com`, filteredPlayer[0].id);
+            await deleteDoc(theRef)
+        }
     }
-    const handleWillSave = () => {
-        updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { willText: willText})
-        .then(() => {
+    const handleWillSave = async () => {
             Store.addNotification({
                 message: "Testamento Salvo com sucesso",
                 type: "success",
@@ -381,7 +376,7 @@ const PlayerMobile = () => {
                 }
             })
         setWillOpen(false);
-})
+
     }
     const handleFerreiroWeapon = () => {
     }
@@ -413,8 +408,47 @@ const PlayerMobile = () => {
         })    
         updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
     }
+
+    const setRandomFauxText = () => {
+        const randomNum = Math.round(Math.random() * 10)
+        switch (randomNum) {
+
+            case 1:
+                setCopiedText('Eva é o nome da assassina em serie')
+                break;
+            case 2:
+                setCopiedText('O carteiro não é mais um personagem no jogo')
+                break;
+            case 3:
+                setCopiedText('O coven retornará')
+                break;
+            case 4:
+                setCopiedText('A medium é o personagem mais alterado')
+                break;
+            case 5:
+                setCopiedText('O culto agora está presente no jogo')
+                break;
+            case 6:
+                setCopiedText('O lore do jogo está em produção')
+                break;
+            case 7:
+                setCopiedText('O lobisomen assassinou o carteiro no lore')
+                break;
+            case 8:
+                setCopiedText('O prefeito que iniciou a aquisição')
+                break;
+            case 9:
+                setCopiedText('Roland é o nome do bobo da corte')
+                break;
+            case 10:
+                setCopiedText('O investigador é o personagem mais influente no jogo')
+
+                break;
+        }
+    }
     const handleActionSave = () => {
         setFauxTextBox('')
+        setRandomFauxText();
         if (playerCurrentRole[0].wakeTrigger === 6) {
             if (currentDay % 2 === 1) {
                 
@@ -548,6 +582,7 @@ const PlayerMobile = () => {
     const handleSkipTurn = () => {
         // Make it so the pending turns into completed
         setFauxTextBox('');
+        setRandomFauxText()
         updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
     }
     return (
@@ -888,7 +923,7 @@ const PlayerMobile = () => {
                                                             <div>
                                                                 {copiedText}
                                                             </div>
-                                                            <input type="text" value={fauxTextBox} onChange={(e) => setFauxTextBox(e.target.value)} placeholder="Copie o texto acima" />
+                                                            <input type="text" value={fauxTextBox} onChange={(e) => setFauxTextBox(e.target.value)} placeholder="Copie o texto acima" autoCorrect="off" autoComplete="off" />
                                                             <div className="littleinformativo">
                                                                 Você só pode completar sua ação se preencher a caixa acima!
                                                             </div>

@@ -356,7 +356,7 @@ const Day = () => {
         setIsReviveModalOpen(false);
         const target = deadPlayers.filter(player => { return player.playerName === playerKilling });
         const martir = alivePlayers.filter(player => player.role === 'martir')
-        updateDoc(doc(database, "playeradmin", "players", user.email, target[0].id), { life: "alive", newResponse: '' });
+        updateDoc(doc(database, "playeradmin", "players", user.email, target[0].id), { life: "alive", newResponse: '', action: 'pending' });
         updateDoc(doc(database, "playeradmin", "players", user.email, martir[0].id), { life: "dead" });
         setKillPanelIsOpen(true);
         setKillAnouncementUpdate(`O jogador ${target[0].playerName} foi ressucitado, o mártir ${martir[0].playerName} se sacrificou por essa troca.`)
