@@ -112,8 +112,12 @@ input, select{
 .counterBox{
     border: 1px solid #836E00;
     border-radius: 8px;
-    padding: 5px 10px;
-    margin: 0px 5px  5px 5px  ;
+    margin: 5px  ;
+    display: flex;
+    justify-content: center;
+    width: 30px;
+    height: 30px;
+    align-items: center;
 }
 .counterInfo{
     margin: 10px 0px;
@@ -162,7 +166,10 @@ input::-webkit-inner-spin-button {
     border: 1px solid #B0B159 ;
     border-radius: 15px;
 }
-
+.cardOnlyModal-content{
+    background: none !important;
+    border: none !important;
+}
 @keyframes anvil {
     0% {
       transform: scale(1) translateY(0px);
@@ -210,6 +217,11 @@ input::-webkit-inner-spin-button {
     display: flex;
     flex-direction: column;
     width: 400px;
+  }
+
+  .defaultBorder{
+    border: 1px solid #836E00;
+    border-radius: 10px;
   }
 
   

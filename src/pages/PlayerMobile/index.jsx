@@ -13,11 +13,19 @@ import questionSVG from "../../assets/svgs/question-svg.svg"
 import ghostSVG from "../../assets/svgs/ghost-svg.svg"
 import lifeDeadSVG from "../../assets/svgs/life-death-svg.svg"
 import xSVG from "../../assets/svgs/x-svg.svg"
+import gallowSVG from "../../assets/svgs/gallow-svg.svg"
+import innocentSVG from "../../assets/svgs/innocent-svg.svg"
+import scaleSVG from "../../assets/svgs/scale-svg.svg"
 import ButtonMobile from "../../components/ButtonMobile";
 import './style.css';
 
 
 const PlayerMobile = () => {
+    const [judgementCounter, setJudgementCounter] = useState(0);
+    const [judgementKillCounter, setJudgementKillCounter] = useState(0);
+    const [judgementKillInfo, setJudgementKillInfo] = useState([]);
+    const [allAcusationsKillingVotes, setAllAcusationsKillingVotes] = useState([]);
+    const [allCultAcusationsKillingVotes, setAllCultAcusationsKillingVotes] = useState([]);
     const [playerList, setPlayerList] = useState([]);
     const [user, setUser] = useState([])
     const [players, setPlayers] = useState([]);
@@ -45,6 +53,7 @@ const PlayerMobile = () => {
     const [mensagemDeMorto, setMensagemDeMorto] = useState('');
     const [mensagemdoMal, setMensagemdoMal] = useState('');
     const [allMessages, setAllMessages] = useState([])
+    const [allAcusations, setAllAcusations] = useState([]);
     const [hiddenPrivateInfo, setHiddenPrivateInfo] = useState(false);
     const [allEvilChat, setHiddenEvilChat] = useState([]);
     const [noActionsNight1, setNoActionsNight1] = useState(['assassino em serie', 'mestre', 'vigilante', 'lobisomen', 'palhaco', 'pistoleiro', 'zelador', 'caloteira', 'veterano'])
@@ -82,7 +91,8 @@ const PlayerMobile = () => {
                             life: doc.data().life,
                             actionforRoleCounter: doc.data().actionforRoleCounter,
                             cultChoice: doc.data().cultChoice,
-                            activePlayer: doc.data().activePlayer
+                            activePlayer: doc.data().activePlayer,
+                            zeladorClear: doc.data().zeladorClear
                         })
                     }
                         if (doc.id === registeredPlayerId) {
@@ -106,7 +116,8 @@ const PlayerMobile = () => {
                                 life: doc.data().life,
                                 actionforRoleCounter: doc.data().actionforRoleCounter,
                                 cultChoice: doc.data().cultChoice,
-                                activePlayer: doc.data().activePlayer
+                                activePlayer: doc.data().activePlayer,
+                                zeladorClear: doc.data().zeladorClear
                             })
                             if (playerInfo[0].role !== 'none') {
                                 const chosenRole = allRoles.filter((role) => role.role === playerInfo[0].role)
@@ -152,6 +163,7 @@ const PlayerMobile = () => {
                     multiple: doc.data().multiple,
                     image: doc.data().image,
                     wakeTrigger: doc.data().WakeTrigger,
+                    category: doc.data().category
                 })
             })
             setTownRole(roles)
@@ -171,6 +183,7 @@ const PlayerMobile = () => {
                     multiple: doc.data().multiple,
                     image: doc.data().image,
                     wakeTrigger: doc.data().WakeTrigger,
+                    category: doc.data().category
                 })
             })
             setMafiaRole(roles);
@@ -189,6 +202,7 @@ const PlayerMobile = () => {
                     multiple: doc.data().multiple,
                     image: doc.data().image,
                     wakeTrigger: doc.data().WakeTrigger,
+                    category: doc.data().category
                 })
             })
             setCovenRole(roles);
@@ -208,6 +222,7 @@ const PlayerMobile = () => {
                     multiple: doc.data().multiple,
                     image: doc.data().image,
                     wakeTrigger: doc.data().WakeTrigger,
+                    category: doc.data().category
 
                 })
             })
@@ -228,6 +243,7 @@ const PlayerMobile = () => {
                     multiple: doc.data().multiple,
                     image: doc.data().image,
                     wakeTrigger: doc.data().WakeTrigger,
+                    category: doc.data().category
 
                 })
             })
@@ -248,6 +264,7 @@ const PlayerMobile = () => {
                     multiple: doc.data().multiple,
                     image: doc.data().image,
                     wakeTrigger: doc.data().WakeTrigger,
+                    category: doc.data().category
 
                 })
             })
@@ -288,13 +305,33 @@ const PlayerMobile = () => {
                 setCurrentDay(currentDayx.currentDay)
             })
         
+            const timerCounter = onSnapshot(collection(database, `playeradmin/counters/counters`), (snapshot) => {
+                let temp = 0;
+                let temp2 = 0;
+                let temp2Info = [];
+                snapshot.forEach((doc) => {
+                    if (doc.id === 'judgementCounter') {
+                        temp = doc.data().counter
+                    }
+                    if (doc.id === 'judgementKillCounter') {
+                        temp2 = doc.data().counter
+                        temp2Info.push({target: doc.data().target, votes: doc.data().votes})
+                    }
+                })
+                setJudgementCounter(temp)
+                setJudgementKillCounter(temp2)
+                setJudgementKillInfo(temp2Info)
+                console.log(temp)
+                })
+            
+        
         const mesagesSnapshot = onSnapshot(collection(database, `playeradmin/chatsLog/jspedrogarcia@gmail.com`),
             (snapshot) => {
                 let currentMessages = [];
                 snapshot.forEach((doc) => {
                     currentMessages.push({autor: doc.data().autor, message: doc.data().mensagem, horario: doc.data().horario})
                 })
-                const sortedMessages = currentMessages.sort((a, b) => a.horario - b.horario)
+                const sortedMessages = currentMessages.sort((b, a) => a.horario - b.horario)
                 setAllMessages(sortedMessages)
             })
         const familyMessageSnapshot = onSnapshot(collection(database, `playeradmin/familyChatLog/jspedrogarcia@gmail.com`),
@@ -303,11 +340,63 @@ const PlayerMobile = () => {
                 snapshot.forEach((doc) => {
                     currentMessages.push({autor: doc.data().autor, message: doc.data().mensagem, horario: doc.data().horario})
                 })
-                const sortedMessages = currentMessages.sort((a, b) => a.horario - b.horario)
+                const sortedMessages = currentMessages.sort((b, a) => a.horario - b.horario)
                 setHiddenEvilChat(sortedMessages)
             })
+            const accusations = onSnapshot(collection(database, `playeradmin/judgementAction/judgementAcusations`), (snapshot) => {
+                let temp = [];
+                snapshot.forEach((doc) => {
+                    temp.push({
+                        acuser: doc.data().acuser,
+                        acuserName: doc.data().acuserName,
+                        acused: doc.data().acused,
+                        acusedName: doc.data().acusedName,
+                        value: doc.data().value,
+                        id: doc.id,
+                        key: doc.id
+                    })
+                })
+                setAllAcusations(temp);
+            })
+            const accusationsKilling = onSnapshot(collection(database, `playeradmin/judgementAction/judgementKillingAction`), (snapshot) => {
+                let temp = [];
+                snapshot.forEach((doc) => {
+                    temp.push({
+                        voter: doc.data().voter,
+                        voterName: doc.data().voterName,
+                        vote: doc.data().vote,
+                        value: doc.data().value,
+                        id: doc.id,
+                        key: doc.id
+                    })
+                })
+                setAllAcusationsKillingVotes(temp);
+            })
+            const cultAccusationsKilling = onSnapshot(collection(database, `playeradmin/judgementAction/judgementCultKillingAction`), (snapshot) => {
+                let temp = [];
+                snapshot.forEach((doc) => {
+                    temp.push({
+                        voter: doc.data().voter,
+                        voterName: doc.data().voterName,
+                        vote: doc.data().vote,
+                        value: doc.data().value,
+                        id: doc.id,
+                        key: doc.id
+                    })
+                })
+                setAllCultAcusationsKillingVotes(temp);
+            })
         }, [registeredPlayerId])
-            
+     
+        useEffect(() => {
+            const timer =  judgementCounter > 0 && setInterval(() => setJudgementCounter(judgementCounter - 1), 1000)
+            return () => clearInterval(timer);
+}, [judgementCounter])
+        useEffect(() => {
+            const timer =  judgementKillCounter > 0 && setInterval(() => setJudgementKillCounter(judgementKillCounter - 1), 1000)
+            return () => clearInterval(timer);
+}, [judgementKillCounter])
+        
     function handlePlayerSignUp(event) {
             event.preventDefault()
             const ref = collection(database, `playeradmin/players/jspedrogarcia@gmail.com`)
@@ -330,6 +419,7 @@ const PlayerMobile = () => {
                 executorTarget: false,
                 cultChoice: false,
                 activePlayer: false,
+                zeladorClear: false
             }) 
             .then(function (docRef) {
                 setRegisteredPlayerId(docRef.id);
@@ -414,69 +504,46 @@ const PlayerMobile = () => {
         switch (randomNum) {
 
             case 1:
-                setCopiedText('Eva é o nome da assassina em serie')
+                setCopiedText('A assassina em serie se chama Eva')
                 break;
             case 2:
-                setCopiedText('O carteiro não é mais um personagem no jogo')
+                setCopiedText('O carteiro foi removido do jogo')
                 break;
             case 3:
-                setCopiedText('O coven retornará')
+                setCopiedText('O coven vai voltar')
                 break;
             case 4:
-                setCopiedText('A medium é o personagem mais alterado')
+                setCopiedText('A medium foi a personagem mais alterada')
                 break;
             case 5:
-                setCopiedText('O culto agora está presente no jogo')
+                setCopiedText('O culto agora faz parte do jogo')
                 break;
             case 6:
-                setCopiedText('O lore do jogo está em produção')
+                setCopiedText('O nome do jogo vai mudar')
                 break;
             case 7:
-                setCopiedText('O lobisomen assassinou o carteiro no lore')
+                setCopiedText('O lobisomen matou o carteiro')
                 break;
             case 8:
-                setCopiedText('O prefeito que iniciou a aquisição')
+                setCopiedText('O prefeito tem muita influencia no jogo')
                 break;
             case 9:
-                setCopiedText('Roland é o nome do bobo da corte')
+                setCopiedText('O bobo da corte se chama Roland')
                 break;
             case 10:
-                setCopiedText('O investigador é o personagem mais influente no jogo')
-
+                setCopiedText('O investigador perdeu muito poder')
                 break;
         }
     }
     const handleActionSave = () => {
-        setFauxTextBox('')
-        setRandomFauxText();
-        if (playerCurrentRole[0].wakeTrigger === 6) {
-            if (currentDay % 2 === 1) {
-                
-                updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
-            } else {
-            const targetRole = alivePlayers.filter((player) => player.playerName === target1);
-            const ref = collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/mobilePlayerActions/mobilePlayerActionsSingle`)
-            addDoc(ref, {
-                user: playerCurrentInformation[0].playerName,
-                userID: playerCurrentInformation[0].id,
-                userRole: playerCurrentInformation[0].role,
-                target: target1,
-                targetRole: targetRole[0].role,
-                wakeOrder: playerCurrentInformation[0].wakeOrder,
-                targetId: targetRole[0].id
-            })
-                updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
-            }
-        }
-        if (playerCurrentRole[0].role === 'padeira') { 
-            updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
-        } else if (playerCurrentRole[0].role === 'executor') {
-            
-            if (playerCurrentInformation[0].actionforRoleCounter < 1) {
-                updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
-            } else {
-                const playersInGame = alivePlayers;
-                const targetRole = playersInGame.filter((player) => player.playerName === target1);
+        try {
+
+            if (playerCurrentRole[0].wakeTrigger === 6) {
+                if (currentDay % 2 === 1) {
+                    
+                    updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
+                } else {
+                const targetRole = alivePlayers.filter((player) => player.playerName === target1);
                 const ref = collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/mobilePlayerActions/mobilePlayerActionsSingle`)
                 addDoc(ref, {
                     user: playerCurrentInformation[0].playerName,
@@ -487,43 +554,16 @@ const PlayerMobile = () => {
                     wakeOrder: playerCurrentInformation[0].wakeOrder,
                     targetId: targetRole[0].id
                 })
-                updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
-                updateDoc((doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", playerCurrentInformation[0].id)), { actionforRoleCounter: playerCurrentInformation[0].actionforRoleCounter - 1 });
+                    updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
+                }
             }
-        } else {
-            if ((playerCurrentRole[0].wakeTrigger === 1 && playerCurrentInformation[0].actionforRoleCounter > 0) ||(playerCurrentRole[0].wakeTrigger === 1 && playerCurrentInformation[0].actionforRoleCounter === null)) {
-                const targetRole = alivePlayers.filter((player) => player.playerName === target1);
-            const ref = collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/mobilePlayerActions/mobilePlayerActionsSingle`)
-            addDoc(ref, {
-                user: playerCurrentInformation[0].playerName,
-                userID: playerCurrentInformation[0].id,
-                userRole: playerCurrentInformation[0].role,
-                target: target1,
-                targetRole: targetRole[0].role,
-                wakeOrder: playerCurrentInformation[0].wakeOrder,
-                targetId: targetRole[0].id
-            })
-                updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
+            if (playerCurrentRole[0].role === 'padeira') { 
+                updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
+            } else if (playerCurrentRole[0].role === 'executor') {
                 
-            } else if (playerCurrentRole[0].wakeTrigger === 4 && playerCurrentInformation[0].actionforRoleCounter > 0) {
-                const ref = collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/mobilePlayerActions/mobilePlayerActionsSingle`)
-                
-            addDoc(ref, {
-                user: playerCurrentInformation[0].playerName,
-                userID: playerCurrentInformation[0].id,
-                userRole: playerCurrentInformation[0].role,
-                target: playerCurrentInformation[0].playerName,
-                targetRole: playerCurrentInformation[0].role,
-                wakeOrder: playerCurrentInformation[0].wakeOrder,
-                targetId: playerCurrentInformation[0].id
-            })    
-            updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
-            
-        } else {
-        if (playerCurrentInformation[0].actionforRoleCounter === 0) {
+                if (playerCurrentInformation[0].actionforRoleCounter < 1) {
                     updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
-                }    
-                if (playerCurrentRole[0].wakeTrigger === 2) {
+                } else {
                     const playersInGame = alivePlayers;
                     const targetRole = playersInGame.filter((player) => player.playerName === target1);
                     const ref = collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/mobilePlayerActions/mobilePlayerActionsSingle`)
@@ -536,29 +576,152 @@ const PlayerMobile = () => {
                         wakeOrder: playerCurrentInformation[0].wakeOrder,
                         targetId: targetRole[0].id
                     })
-                    const targetRole2 = playersInGame.filter((player) => player.playerName === target1);
-                    addDoc(ref, {
-                        user: playerCurrentInformation[0].playerName,
-                        userID: playerCurrentInformation[0].id,
-                        userRole: playerCurrentInformation[0].role,
-                        target: target2,
-                        targetRole: targetRole2[0].role,
-                        wakeOrder: playerCurrentInformation[0].wakeOrder,
-                        targetId: targetRole2[0].id
-                    })
-                        updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
-          }      
+                    updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
+                    updateDoc((doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", playerCurrentInformation[0].id)), { actionforRoleCounter: playerCurrentInformation[0].actionforRoleCounter - 1 });
+                }
+            } else {
+                if ((playerCurrentRole[0].wakeTrigger === 1 && playerCurrentInformation[0].actionforRoleCounter > 0) ||(playerCurrentRole[0].wakeTrigger === 1 && playerCurrentInformation[0].actionforRoleCounter === null)) {
+                    const targetRole = alivePlayers.filter((player) => player.playerName === target1);
+                const ref = collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/mobilePlayerActions/mobilePlayerActionsSingle`)
+                addDoc(ref, {
+                    user: playerCurrentInformation[0].playerName,
+                    userID: playerCurrentInformation[0].id,
+                    userRole: playerCurrentInformation[0].role,
+                    target: target1,
+                    targetRole: targetRole[0].role,
+                    wakeOrder: playerCurrentInformation[0].wakeOrder,
+                    targetId: targetRole[0].id
+                })
+                    updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
+                    
+                } else if (playerCurrentRole[0].wakeTrigger === 4 && playerCurrentInformation[0].actionforRoleCounter > 0) {
+                    const ref = collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/mobilePlayerActions/mobilePlayerActionsSingle`)
+                    
+                addDoc(ref, {
+                    user: playerCurrentInformation[0].playerName,
+                    userID: playerCurrentInformation[0].id,
+                    userRole: playerCurrentInformation[0].role,
+                    target: playerCurrentInformation[0].playerName,
+                    targetRole: playerCurrentInformation[0].role,
+                    wakeOrder: playerCurrentInformation[0].wakeOrder,
+                    targetId: playerCurrentInformation[0].id
+                })    
+                updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
+                
+            } else {
+            if (playerCurrentInformation[0].actionforRoleCounter === 0) {
+                        updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" } )
+                    }    
+                    if (playerCurrentRole[0].wakeTrigger === 2) {
+                        const playersInGame = alivePlayers;
+                        const targetRole = playersInGame.filter((player) => player.playerName === target1);
+                        const ref = collection(database, `playeradmin/playerStatuses/jspedrogarcia@gmail.com/mobilePlayerActions/mobilePlayerActionsSingle`)
+                        addDoc(ref, {
+                            user: playerCurrentInformation[0].playerName,
+                            userID: playerCurrentInformation[0].id,
+                            userRole: playerCurrentInformation[0].role,
+                            target: target1,
+                            targetRole: targetRole[0].role,
+                            wakeOrder: playerCurrentInformation[0].wakeOrder,
+                            targetId: targetRole[0].id
+                        })
+                        const targetRole2 = playersInGame.filter((player) => player.playerName === target1);
+                        addDoc(ref, {
+                            user: playerCurrentInformation[0].playerName,
+                            userID: playerCurrentInformation[0].id,
+                            userRole: playerCurrentInformation[0].role,
+                            target: target2,
+                            targetRole: targetRole2[0].role,
+                            wakeOrder: playerCurrentInformation[0].wakeOrder,
+                            targetId: targetRole2[0].id
+                        })
+                            updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
+              }      
+            }
+            }
+            // This triggers for players that have limited roles except for Executor and Padeira that do something else.
+            if ((playerCurrentRole[0].role === 'investigador' && playerCurrentInformation[0].actionforRoleCounter > 0) || (playerCurrentRole[0].role === 'zelador' && playerCurrentInformation[0].actionforRoleCounter > 0) || (playerCurrentRole[0].role === 'matriarca' && playerCurrentInformation[0].actionforRoleCounter > 0) || (playerCurrentRole[0].role === 'veterano' && playerCurrentInformation[0].actionforRoleCounter > 0) || (playerCurrentRole[0].role === 'caloteira' && playerCurrentInformation[0].actionforRoleCounter > 0) ) {
+                updateDoc((doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", playerCurrentInformation[0].id)), { actionforRoleCounter: playerCurrentInformation[0].actionforRoleCounter - 1 });
+            }
+            if (playerCurrentRole[0].wakeTrigger === 0) {
+                updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
+            }
+            setFauxTextBox('')
+            setRandomFauxText();
+            setTarget1('');
+            setTarget2('');
+        } catch {
+            console.log('deu ruim hein gata')
+            Store.addNotification({
+                title: "Erro",
+                message: "Selecione o seu alvo para confirmar sua ação",
+                type: "warning",
+                insert: "top",
+                container: "top-right",
+                animationIn: ["animate__animated", "animate__fadeIn"],
+                animationOut: ["animate__animated", "animate__fadeOut"],
+                dismiss: {
+                  duration: 5000,
+                  onScreen: true
+                }
+            })
         }
+
+
+    }
+    const voteforMurder = (idDoVotante, vote) => {
+        const myVote = allAcusationsKillingVotes.filter((vote) => vote.voter === idDoVotante)
+        if (myVote.length > 0) {
+
+            if (myVote[0].vote === vote) {
+                deleteDoc(doc(database, "playeradmin", "judgementAction", "judgementKillingAction", myVote[0].id))
+            }
+            updateDoc(doc(database, "playeradmin", "judgementAction", "judgementKillingAction", myVote[0].id), { vote: vote} )
+            
+        } else {
+            addDoc(collection(database, `playeradmin/judgementAction/judgementKillingAction`), {
+                voter: idDoVotante,
+                voterName: playerCurrentInformation[0].playerName,
+                vote: vote,
+                value: playerCurrentRole[0].role === "prefeito" || playerCurrentRole[0].role === 'cidadao' ? 2 : 1
+            })
         }
-        // This triggers for players that have limited roles except for Executor and Padeira that do something else.
-        if ((playerCurrentRole[0].role === 'investigador' && playerCurrentInformation[0].actionforRoleCounter > 0) || (playerCurrentRole[0].role === 'zelador' && playerCurrentInformation[0].actionforRoleCounter > 0) || (playerCurrentRole[0].role === 'matriarca' && playerCurrentInformation[0].actionforRoleCounter > 0) || (playerCurrentRole[0].role === 'veterano' && playerCurrentInformation[0].actionforRoleCounter > 0) || (playerCurrentRole[0].role === 'caloteira' && playerCurrentInformation[0].actionforRoleCounter > 0) ) {
-            updateDoc((doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", playerCurrentInformation[0].id)), { actionforRoleCounter: playerCurrentInformation[0].actionforRoleCounter - 1 });
+    }
+    const voteforCultMurder = (idDoVotante, vote) => {
+        const myVote = allCultAcusationsKillingVotes.filter((vote) => vote.voter === idDoVotante)
+        if (myVote.length > 0) {
+
+            if (myVote[0].vote === vote) {
+                deleteDoc(doc(database, "playeradmin", "judgementAction", "judgementCultKillingAction", myVote[0].id))
+            }
+            updateDoc(doc(database, "playeradmin", "judgementAction", "judgementCultKillingAction", myVote[0].id), { vote: vote} )
+            
+        } else {
+            addDoc(collection(database, `playeradmin/judgementAction/judgementCultKillingAction`), {
+                voter: idDoVotante,
+                voterName: playerCurrentInformation[0].playerName,
+                vote: vote,
+                value: playerCurrentRole[0].role === "prefeito" || playerCurrentRole[0].role === 'cidadao' ? 2 : 1
+            })
         }
-        if (playerCurrentRole[0].wakeTrigger === 0) {
-            updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", registeredPlayerId), { action: "complete" })
+    }
+    const acuseThisPlayer = (id, name) => {
+        const myAcusation = allAcusations.filter((acusation) => acusation.acuser === playerCurrentInformation[0].id)
+        if (myAcusation.length > 0) {
+            if (myAcusation[0].acused === id) {
+                deleteDoc(doc(database, "playeradmin", "judgementAction", "judgementAcusations", myAcusation[0].id))
+
+            }
+            updateDoc(doc(database, "playeradmin", "judgementAction", "judgementAcusations", myAcusation[0].id), { acused: id, acusedName: name } )
+        } else {
+            addDoc(collection(database, `playeradmin/judgementAction/judgementAcusations`), {
+                acuser: playerCurrentInformation[0].id,
+                acuserName: playerCurrentInformation[0].playerName,
+                acused: id,
+                acusedName: name,
+                value: playerCurrentRole[0].role === "prefeito" || playerCurrentRole[0].role === 'cidadao' ? 2 : 1
+            })
         }
-        setTarget1('');
-        setTarget2('');
     }
     const enviarMensagemDeMorto = () => {
         addDoc(collection(database, `playeradmin/chatsLog/jspedrogarcia@gmail.com`), {
@@ -618,8 +781,7 @@ const PlayerMobile = () => {
                                 </div>
                         </div>
                     ) :
-            gameState === 'inicio' ?
-            (
+            gameState === 'inicio' ? (
                             <div className="waitingForMatch">
                                 <p>
                                 Bem-vindo {playerCurrentInformation[0]?.playerName}!
@@ -632,7 +794,7 @@ const PlayerMobile = () => {
                                     <ButtonMobile clickFunctionality={() => setEraseModalOpen(true)} svgChoice={xSVG} />
 
                                 </div>
-            </div>
+                            </div>
             ) :
             gameState === 'entregueCartas' ? (
                             <div className="cardDelivered">
@@ -713,13 +875,15 @@ const PlayerMobile = () => {
                                                     </div>
                                                 ))}
                                                 </div>
+                                                </div>
+                                            <div className="alignThatShit">
                                                 <div className="chatMortosTextType">
-                                            <input type="text" value={mensagemDeMorto} onChange={(e) => setMensagemDeMorto(e.target.value)} />
+                                                <input type="text" value={mensagemDeMorto} onChange={(e) => setMensagemDeMorto(e.target.value)} />
                                                     <button className="button" onClick={enviarMensagemDeMorto}>Enviar</button>
                                                 </div>
                                                     <span>Informativo: O medium pode ler suas mensagens a noite!</span>
+                                                </div>
                                             </div>
-                                        </div>
                                     ) : (null)}
 
                                     {playerCurrentInformation[0]?.filliation === 'the family' && playerCurrentInformation[0]?.life === "alive" ? (
@@ -906,7 +1070,7 @@ const PlayerMobile = () => {
                                                     </div>
                                                     <div className="evilChatButtons">
                                                     <input type="text" value={mensagemdoMal} onChange={(e) => setMensagemdoMal(e.target.value)}/>
-                                                    <button type="button" className="button" onClick={sendEvilMessage} disabled={mensagemdoMal === ''}>Enviar Mensagem</button>
+                                                    <button type="button" className="button" onClick={sendEvilMessage} disabled={mensagemdoMal === ''}>Enviar</button>
                                                     </div>
                                                 </div>
                                             ) : (null)}
@@ -946,7 +1110,194 @@ const PlayerMobile = () => {
                                             )}
                                         </div>
             </div>
-            ) : ('')
+            )
+                                        : gameState === 'judgementVoting' && playerCurrentRole.length > 0 ? (
+                                            playerCurrentInformation[0]?.life === 'alive' ? (
+
+                                            <div className="acusationPlayerPage ">
+                                                <div className="interactiveButtons">
+                                    <ButtonMobile clickFunctionality={() => setCardOpen(true)} svgChoice={cardSVG} />
+                                    <ButtonMobile clickFunctionality={() => setWillOpen(true)} svgChoice={scrollSVG} />
+                                    <ButtonMobile clickFunctionality={() => setPlayerListingOpen(true)} svgChoice={lifeDeadSVG} />
+                                    <ButtonMobile clickFunctionality={() => setQuestionOpen(true)} svgChoice={questionSVG} />
+                                    </div>
+                                                <h4 className="centeredTitleText">Acusação Liberada, vote para acusar alguém </h4>
+                                                <h4>Timer: {judgementCounter}</h4>
+                    <div className="scrollable acusuationPlayerNames card-border">
+                    {alivePlayers.map((player) =>
+                    (<div className="acusationBoxPlayer">
+                                <span className="counterBox">
+                                {allAcusations.filter((acusation) => acusation.acused === player.id).length}
+                        </span>
+                        <span className="acusationBoxPlayerName">
+                        {player.playerName}
+                        </span>
+                        {player.playerName === playerCurrentInformation[0].playerName ? (null) : allAcusations.filter((acusation) => acusation.acused === player.id && acusation.acuser === playerCurrentInformation[0].id).length > 0 ?
+                            (
+                                <div className="buttonAcusationBox">
+                                <button className="button" onClick={() => acuseThisPlayer(player.id, player.playerName)}>
+                                Cancelar
+                                </button>
+                                Acusado    
+                                </div>
+                            ): (
+                                <div className="buttonAcusationBox">
+                                <button className="button" onClick={() => acuseThisPlayer(player.id, player.playerName)}>
+                                Acusar
+                                </button>
+                                </div>
+                        )}
+                    </div>))}     
+                       </div>
+                       <div className="acusationHistory">
+                              <h4>Acusações Feitas</h4>
+                              <div className="acusationHistoryBox scrollable card-border">
+                             {allAcusations.map((acusation) => (
+                                <div className="eachAcused">
+                                {acusation.acuserName} acusou {acusation.acusedName}
+                                </div>
+                           ))}
+                             </div>
+                        </div>
+                                                </div>
+                                            ) : (
+                                                <div className="chatMortosBox2">
+                                                <div className="fadeMe" hidden={hiddenPrivateInfo}>Chat dos Mortos</div>
+                                                <div className="chatMortos fadeMe" hidden={hiddenPrivateInfo}>
+    
+                                                <div className="chatMortosLog">
+                                                    {allMessages.map((message) => (
+                                                        <div className="chatMortosLogMsg">
+                                                            <span>{message.autor}:</span><span>{message.message}</span>
+                                                        </div>
+                                                    ))}
+                                                    </div>
+                                                        </div>
+                                                        <div className="alignThatShit">
+                                                <div className="chatMortosTextType">
+                                                <input type="text" value={mensagemDeMorto} onChange={(e) => setMensagemDeMorto(e.target.value)} />
+                                                    <button className="button" onClick={enviarMensagemDeMorto}>Enviar</button>
+                                                </div>
+                                                    <span>Informativo: O medium pode ler suas mensagens a noite!</span>
+                                                </div>
+                                                </div>
+                                            )
+                                                
+                                            
+            ) : gameState === 'judgementKilling' && playerCurrentRole.length > 0 ? (
+                    playerCurrentInformation[0]?.life === 'alive' ? (
+                                                
+                    <div className="acusationPlayerPage ">
+                                    <div className="interactiveButtons">
+                                    <ButtonMobile clickFunctionality={() => setCardOpen(true)} svgChoice={cardSVG} />
+                                    <ButtonMobile clickFunctionality={() => setWillOpen(true)} svgChoice={scrollSVG} />
+                                    <ButtonMobile clickFunctionality={() => setPlayerListingOpen(true)} svgChoice={lifeDeadSVG} />
+                                    <ButtonMobile clickFunctionality={() => setQuestionOpen(true)} svgChoice={questionSVG} />
+                                    </div>
+                    <h4 className="centeredTitleText">Votação para matar o jogador: {judgementKillInfo[0]?.target }</h4>
+                <h4>Timer: {judgementKillCounter}</h4>
+                    <div className="killingVotePage">
+                        <button className="intButton" onClick={() => voteforMurder(playerCurrentInformation[0].id, "inocente")}>
+                        <img src={innocentSVG} alt="" />
+                                </button>
+                        <button className="intButton" onClick={() =>  voteforMurder(playerCurrentInformation[0].id, "abster")}>
+                        <img src={scaleSVG} alt="" />
+                        </button>
+                    <button className="intButton" onClick={() =>  voteforMurder(playerCurrentInformation[0].id, "culpado")}>
+                    <img src={gallowSVG} alt="" />
+                                                        </button>
+                    <span className="centeredTitleText">Inocente</span>
+                    <span className="centeredTitleText">Abster</span>
+                    <span className="centeredTitleText">Culpado</span>
+                       </div>
+                       <div className="acusationHistory">
+                              <h4>Votos dos jogadores</h4>
+                              <div className="acusationHistoryBox scrollable card-border">
+                             {allAcusationsKillingVotes.map((acusation) => (
+                                <div className="eachAcused">
+                                {acusation.voterName} votou {acusation.vote}
+                                </div>
+                           ))}
+                             </div>
+                        </div>
+                        </div>    
+                ) : (
+                                                    <div className="chatMortosBox2">
+                                                    <div className="fadeMe" hidden={hiddenPrivateInfo}>Chat dos Mortos</div>
+                                                    <div className="chatMortos fadeMe" hidden={hiddenPrivateInfo}>
+        
+                                                    <div className="chatMortosLog">
+                                                        {allMessages.map((message) => (
+                                                            <div className="chatMortosLogMsg">
+                                                                <span>{message.autor}:</span><span>{message.message}</span>
+                                                            </div>
+                                                        ))}
+                                                        </div>
+                                                </div>
+                                                <div className="alignThatShit">
+                                                <div className="chatMortosTextType">
+                                                <input type="text" value={mensagemDeMorto} onChange={(e) => setMensagemDeMorto(e.target.value)} />
+                                                    <button className="button" onClick={enviarMensagemDeMorto}>Enviar</button>
+                                                </div>
+                                                    <span>Informativo: O medium pode ler suas mensagens a noite!</span>
+                                                </div>
+                                                    </div>
+                )
+                ) : gameState === 'cultKilling' && playerCurrentRole.length > 0 ? (
+                                playerCurrentInformation[0]?.life === 'alive' ? (
+                                    <div className="acusationPlayerPage">
+                                    <div className="interactiveButtons">
+                                    <ButtonMobile clickFunctionality={() => setCardOpen(true)} svgChoice={cardSVG} />
+                                    <ButtonMobile clickFunctionality={() => setWillOpen(true)} svgChoice={scrollSVG} />
+                                    <ButtonMobile clickFunctionality={() => setPlayerListingOpen(true)} svgChoice={lifeDeadSVG} />
+                                    <ButtonMobile clickFunctionality={() => setQuestionOpen(true)} svgChoice={questionSVG} />
+                                    </div>
+                                            <div className="killingVotePage">
+                        <button className="intButton" onClick={() => voteforCultMurder(playerCurrentInformation[0].id, "inocente")}>
+                        <img src={innocentSVG} alt="" />
+                                </button>
+ <span></span>
+                    <button className="intButton" onClick={() =>  voteforCultMurder(playerCurrentInformation[0].id, "culpado")}>
+                    <img src={gallowSVG} alt="" />
+                                                        </button>
+                    <span className="centeredTitleText">Inocente</span>
+                    <span></span>
+                    <span className="centeredTitleText">Culpado</span>
+                       </div>             
+                       <div className="acusationHistory">
+                              <h4>Votos dos jogadores</h4>
+                              <div className="acusationHistoryBox scrollable card-border">
+                             {allCultAcusationsKillingVotes.map((acusation) => (
+                                <div className="eachAcused">
+                                {acusation.voterName} votou {acusation.vote}
+                                </div>
+                           ))}
+                             </div>
+                        </div>                   
+                </div>
+                ) : ( 
+                                                        <div className="chatMortosBox2">
+                                                        <div className="fadeMe" hidden={hiddenPrivateInfo}>Chat dos Mortos</div>
+                                                        <div className="chatMortos fadeMe" hidden={hiddenPrivateInfo}>
+            
+                                                        <div className="chatMortosLog">
+                                                            {allMessages.map((message) => (
+                                                                <div className="chatMortosLogMsg">
+                                                                    <span>{message.autor}:</span><span>{message.message}</span>
+                                                                </div>
+                                                            ))}
+                                                            </div>
+                                                    </div>
+                                                    <div className="alignThatShit">
+                                                <div className="chatMortosTextType">
+                                                <input type="text" value={mensagemDeMorto} onChange={(e) => setMensagemDeMorto(e.target.value)} />
+                                                    <button className="button" onClick={enviarMensagemDeMorto}>Enviar</button>
+                                                </div>
+                                                    <span>Informativo: O medium pode ler suas mensagens a noite!</span>
+                                                </div>
+                                                        </div>
+                    )
+            ) : (null)
             }
                 
             </div>
@@ -963,17 +1314,11 @@ const PlayerMobile = () => {
                     </div>
                     </div>
             </Popup>
-            <Popup className="modalMobile" position="center" open={cardOpen} modal closeOnEscape={false} closeOnDocumentClick={false}>
-                <div>
-
-                
-                    <div className="header"> Sua Carta</div>
-                    <div className="cardDetailedInformation">
+            <Popup className="cardOnlyModal" position="center"  open={cardOpen} modal closeOnEscape={false} closeOnDocumentClick={false}>
+                    <div className="cardDetailedInformation cardDetailsSpecial">
             {playerCurrentRole.length > 0 ? (
-                        <img className="cardImg img-responsive" src={playerCurrentRole[0].image} alt={playerCurrentRole[0].role} /> 
+                        <img onClick={() => setCardOpen(false)} className="cardImg img-responsive" src={playerCurrentRole[0].image} alt={playerCurrentRole[0].role} /> 
                 ) : (<div>Você ainda não possui carta! Só aguardar!</div>)}
-                <button className="button fixedButton" onClick={() => setCardOpen(false)}>Fechar</button>
-                    </div>
                     </div>
             </Popup>
             <Popup className="modalMobile" position="center" open={questionOpen} modal closeOnEscape={false} closeOnDocumentClick={false}>
@@ -988,7 +1333,7 @@ const PlayerMobile = () => {
             <Popup position="center">
 
             </Popup>
-            <Popup className="modalMobile"  open={willOpen} modal closeOnEscape={false} closeOnDocumentClick={false}>
+            <Popup className=""  open={willOpen} modal closeOnEscape={false} closeOnDocumentClick={false}>
                 <div className="modal-testatamentcontent">
 
                     <div className="header"> Seu Testamento</div>
@@ -996,10 +1341,7 @@ const PlayerMobile = () => {
                         <p>Informações que você gostaria de lembrar</p>
                         <textarea className="testamentTextArea" name="" id="" value={willText} onChange={(e) => setWillText(e.target.value)}></textarea>
                     </div>
-                    <div className="fixedButton">
-                <button className="button " onClick={handleWillSave}>Salvar Testamento</button>
-                <button className="button " onClick={() => setWillOpen(false)}>Fechar</button>
-                    </div>
+                <button className="button " onClick={handleWillSave}>Fechar e Salvar</button>
                 </div>
             </Popup>
             <Popup className="modalMobile"  open={playerListingOpen} modal closeOnEscape={false} closeOnDocumentClick={false}>
@@ -1007,17 +1349,26 @@ const PlayerMobile = () => {
 
                     <div className="header"> Lista de Jogadores</div>
                     <div className="playerListingModal">
-                        <div className="listing-inner-modal scrollable">
-                            Jogadores Vivos
-                        <span>{alivePlayers.map((player) => (
+                        <div className="">
+                        <h4>
+                        Jogadores Vivos
+                        </h4>
+                        <div className="defaultBorder listing-inner-modal scrollable">
+                        {alivePlayers.map((player) => (
                             <p key={player.id}>{player.playerName }</p>
-                            )) }</span>
+                            )) }
+                            </div>
                         </div>
-                        <div className="listing-inner-modal scrollable">
+                        <div className="">
+
+                        <h4>
                             Jogadores Mortos
-                        <span>{deadPlayers.map((player) => (
-                            <p key={player.id}>{player.playerName}</p>
-                            )) }</span>
+                        </h4>
+                        <div className="defaultBorder listing-inner-modal scrollable">
+                        {deadPlayers.map((player) => (
+                            <p key={player.id}>{player.playerName} - {player.zeladorClear ? '???????' : player.role}</p>
+                            )) }
+                            </div>
                         </div>
                     </div>
                 <button className="button fixedButton" onClick={() => setPlayerListingOpen(false)}>Fechar</button>

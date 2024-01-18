@@ -11,6 +11,7 @@ import Victory from '../pages/Victory'
 import Private from './Private'
 import Statuses from '../pages/Statuses'
 import PlayerMobile from '../pages/PlayerMobile'
+import Reserve from '../pages/Reserve'
 
 const RoutesApp = () => {
     return (
@@ -28,6 +29,7 @@ const RoutesApp = () => {
             <Route path='victory' element={<Private><Victory/></Private> } />
             <Route path='statuses' element={<Private><Statuses/></Private> } />
             <Route path='PlayerMobile' element={<PlayerMobile/>} />
+            <Route path='Reserve' element={<Reserve/>} />
         </Routes>        
     )
 } 

@@ -67,7 +67,8 @@ const PlayerRole = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
                 })
             })
             setTownRole(roles)
@@ -84,7 +85,8 @@ const PlayerRole = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
                 })
             })
             setMafiaRole(roles);
@@ -100,7 +102,8 @@ const PlayerRole = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
                 })
             })
             setCovenRole(roles);
@@ -117,7 +120,8 @@ const PlayerRole = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
 
                 })
             })
@@ -135,7 +139,8 @@ const PlayerRole = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
 
                 })
             })
@@ -153,7 +158,8 @@ const PlayerRole = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
 
                 })
             })

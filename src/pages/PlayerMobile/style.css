@@ -1,14 +1,73 @@
-.cardImg{
-    width: 100%;
-    
-}
 
 .cardDetailedInformation{
     display: flex;
     flex-direction: column;
     align-items: center;
 }
+.acusationBoxPlayer{
+  display: flex;
+  align-items: center;
 
+}
+.acusationBoxPlayerName{
+  width: 120px;
+}
+.buttonAcusationBox{
+  display: flex;
+  align-items: center;
+}
+.centeredTitleText{
+  text-align: center;
+}
+
+.acusationHistory{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+}
+.acusationHistoryBox{
+  max-height: 150px;
+  overflow: hidden;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+  min-height: 150px;
+}
+
+.cardDetailsSpecial{
+  height: 60vh;
+}
+.cardDetailsSpecial .cardImg{
+  height: 100%;
+}
+.killingVotePage{
+  display: grid;
+  grid-template-columns: auto auto auto;
+  margin-top: 20px;
+  margin-bottom: 20px;
+
+}
+.eachAcused{
+  padding-left: 30px;
+}
+.voteLines{
+  margin-bottom: 5px;
+  display: flex;
+  align-items: center;
+}
+.acusationPlayerPage{
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.acusuationPlayerNames{
+  max-height: 300px;
+  margin-top: 15px;
+  overflow: hidden;
+  width: 100%;
+  min-height: 200px
+}
 .mainMobilePage{
     display: flex;
     align-items: center;
@@ -35,7 +94,7 @@
 }
 
 .intButton{
-    margin-right: 10px;
+    margin: 0px 5px;
     background-color: #B0B159;
     border-radius: 8px;
     padding: 8px;
@@ -57,6 +116,7 @@
   display: flex;
   height: 5vh;
   align-items: center;
+  justify-content: center;
   
 }
 .chatMortosLogMsg{
@@ -86,6 +146,30 @@
     align-items: center;
     margin-top: 10px;
     width: 100%;
+}
+.chatMortosBox2{
+  display: flex;
+  justify-content: center;
+  flex-direction: column;
+  align-items: center;
+  margin-top: 10px;
+  width: 80%;
+}
+.alignThatShit{
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.chatMortos{
+  min-height: 150px;
+}
+.chatMortosLog, .evilChatInfo{
+  min-height: 150px;
+  max-height: 150px;
+  overflow: hidden;
+  overflow-y: auto;
+  flex-direction: column-reverse;
+  display: flex;
 }
 .evilChatButtons{
   display: flex;
@@ -120,13 +204,13 @@
 
 .modalMobile-content{
   width: 90vw;
-  height: 70vh;
+  height: 60vh;
 }
 .testamentTextArea{
-  width: 80vw;
-  height: 40vh;
-  background-color: #424320;
-  font-size: 20px;
+  width: 85%;
+  height: 150px;
+  background-color: #60540eec;
+  font-size: 18px;
   border-radius: 10px;
   color: white;
 
@@ -141,16 +225,19 @@
 .playerListingModal{
   display: flex;
   width: 80%;
+  height: 80%;
+  flex-direction: column;
+  justify-content: space-evenly;
 }
 .listing-inner-modal{
-  width: 50%;
   padding: 0 5px;
-  max-height: 300px;
+  max-height: 100px;
   overflow: hidden;
+  min-height: 100px;
 
 }
 .testamentInformation p{
-  font-size: 20px;
+  font-size: 16px;
   text-align: center;
 }
 .fixedButton{

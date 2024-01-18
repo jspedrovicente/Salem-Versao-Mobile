@@ -76,7 +76,8 @@ const Night = () => {
                             newResponse: doc.data().newResponse,
                             doused: doc.data().doused,
                             actionforRoleCounter: doc.data().actionforRoleCounter,
-                            cultChoice: doc.data().cultChoice
+                            cultChoice: doc.data().cultChoice,
+                            zeladorClear: doc.data().zeladorClear
                         })
                     }
                 })
@@ -110,7 +111,8 @@ const Night = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
                 })
             })
             setTownRole(roles)
@@ -127,7 +129,8 @@ const Night = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
                 })
             })
             setMafiaRole(roles);
@@ -143,7 +146,8 @@ const Night = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
                 })
             })
             setCovenRole(roles);
@@ -160,7 +164,8 @@ const Night = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
 
                 })
             })
@@ -178,7 +183,8 @@ const Night = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
 
                 })
             })
@@ -196,7 +202,8 @@ const Night = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
 
                 })
             })
@@ -262,7 +269,7 @@ const Night = () => {
         interruptMusicPlaying();
         let rolesImunetoBlocks = ['meretriz', 'taberneiro', 'miragem', 'executor', 'caloteira'];
         let rolesThatAttackBlockers = ['assassino em serie', 'mestre', 'lobisomen', 'morte', 'vigilante'];
-        let rolesImunetoAttacks = ['piromaniaco', 'assassino em serie', 'sobrevivente']
+        let rolesImunetoAttacks = ['piromaniaco', 'assassino em serie', 'sobrevivente', 'morte']
         let consideredEvilRoles = ['fome', 'guerra', 'morte', 'estranho', 'amaldicoadora', 'feiticeira benevolente', 'parasita', 'matriarca', 'mestre', 'mordomo', 'zelador', 'caloteira', 'piromaniaco', 'assassino em serie', 'bobo da corte', 'executor', 'lobisomen', 'medico da peste', 'palhaco', 'pistoleiro', 'ocultista' ]
         let blockedTargets = [];
         let attackingAction = [];
@@ -299,14 +306,18 @@ const Night = () => {
                     // if theyre not imune, they get blocked
                     blockedTargets.push(Sactions[i].target)
                     if (Sactions[i].userRole === 'taberneiro') {
+                        if (rolesThatAttackBlockers.includes(Sactions[i].targetRole)) {
+                            // if the person that got blocked is a role that attacks, then push into attackingAction the info
+                            attackingAction.push({ attacker: Sactions[i].target, attackerRole: Sactions[i].targetRole, target: Sactions[i].user, targetRole: Sactions[i].userRole})
+                            }
                         tabernTarget.push(Sactions[i].target);
                     }
                 }
                 
-                if (rolesThatAttackBlockers.includes(Sactions[i].targetRole)) {
-                // if the person that got blocked is a role that attacks, then push into attackingAction the info
-                attackingAction.push({ attacker: Sactions[i].target, attackerRole: Sactions[i].targetRole, target: Sactions[i].user, targetRole: Sactions[i].userRole})
-                }
+                // if (rolesThatAttackBlockers.includes(Sactions[i].targetRole)) {
+                // // if the person that got blocked is a role that attacks, then push into attackingAction the info
+                // attackingAction.push({ attacker: Sactions[i].target, attackerRole: Sactions[i].targetRole, target: Sactions[i].user, targetRole: Sactions[i].userRole})
+                // }
             }
         }
         // For that loops through everyone and declares visits
@@ -340,15 +351,19 @@ const Night = () => {
                 // Now the switch case for all the actions
                 switch (Sactions[i].userRole) {
                     case 'investigador':
-                        if (Sactions[i].targetRole === 'miragem') {
-                            updateDoc((ref), { newResponse: `O jogador ${Sactions[i].target} tem a função meretriz` })
-                        } else if (Sactions[i].targetRole === 'peste') {
-                            updateDoc((ref), { newResponse: `O jogador ${Sactions[i].target} tem a função morte` })
-                        } else {
-                            updateDoc((ref), { newResponse: `O jogador ${Sactions[i].target} tem a função ${Sactions[i].targetRole}` })
-                        }
+                        let determinedRole = allRoles.filter(role => role.role === Sactions[i].targetRole);
+                        let allRoleofCategory = allRoles.filter(role => role.category === determinedRole[0].category);
+                        updateDoc((ref), {
+                            newResponse: `O jogador ${Sactions[i].target} trabalha com ${determinedRole[0].category}: Ele pode ser ${allRoleofCategory.map((role) => role.role)}` })
                         break;
                     case 'xerife':
+                        if (consideredEvilRoles.includes(Sactions[i].targetRole) || fakeSuspect.includes(Sactions[i].target)) {
+                            updateDoc((ref), { newResponse: `O jogador ${Sactions[i].target} é suspeito!` })
+                        }else {
+                            updateDoc((ref), { newResponse: `O jogador ${Sactions[i].target} NÃO é suspeito!` })
+                        }
+                        break;
+                    case 'xerife corrupto':
                         if (consideredEvilRoles.includes(Sactions[i].targetRole) || fakeSuspect.includes(Sactions[i].target)) {
                             updateDoc((ref), { newResponse: `O jogador ${Sactions[i].target} é suspeito!` })
                         }else {
@@ -368,44 +383,27 @@ const Night = () => {
                         }
                         break;
                     case 'fuxiqueira':
-                        // Respond with 3 names, 1 of which has really visited their target, 2 of which are random.
-                        if (alivePlayers.length > 5) {
-                            const peopleThatVisitedFuxTarget = visitsThatOccured.filter((visit) => visit.visited === Sactions[i].target && visit.visitor !== Sactions[i].user);
-                            if (peopleThatVisitedFuxTarget.length > 0) {
-                                console.log('triggered fuxiqueira action');
-                                let suspects = [];
-                                suspects.push(peopleThatVisitedFuxTarget[0].visitor);
-                                const filteredPlayers = alivePlayers.filter((persons) => persons.playerName !== Sactions[i].user && persons.playerName !== suspects[0] && persons.playerName !== Sactions[i].target);
-                                console.log(filteredPlayers);
-                                for (let i = 0; i < 2; i++){
-                                    let xValue = Math.floor((Math.random() * filteredPlayers.length) + 1);
-                                    suspects.push(filteredPlayers[xValue].playerName);
-                                    filteredPlayers.splice(xValue, 1);
-                                }
-                                const organizedSuspects = suspects.sort();
-                                console.log(suspects);
-                                console.log(organizedSuspects);
-                                updateDoc((ref), { newResponse: `O(s) jogador(es) ${organizedSuspects.map((suspect) => suspect)} possivelmente visitaram seu alvo: ${Sactions[i].target}` });
-                            } else {
-                                console.log('did not trigger fuxiqueira action')
-                                updateDoc((ref), { newResponse: `Há boatos de que ninguém visitou seu alvo: ${Sactions[i].target}` });
-                            }
-                        } else {
-                            updateDoc((ref), { newResponse: `Sua habilidade só funciona com 6 ou mais jogadores vivos` });
-                        }
-                        break;
-                    case 'armadilheiro':
                         let possibleVisitors = visitsThatOccured.filter((visit) => visit.visited === Sactions[i].target);
                         let ocurrences = [];
-                        console.log(possibleVisitors);
-                        for (let i = 0; i < possibleVisitors.length; i++) {
-                            const roleOfVisitor = alivePlayers.filter(player => player.playerName === possibleVisitors[i].visitor);
-                            ocurrences.push(roleOfVisitor[0].role)
+                        for (let index = 0; index < possibleVisitors.length; index++) {
+                            if (possibleVisitors[index].visitor === Sactions[i].user) {
+                            } else {
+                              ocurrences.push(possibleVisitors[index].visitor)
+                            }
+
                         }
                         if (ocurrences.length > 0) {
-                            updateDoc((ref), { newResponse: `As funções ${ocurrences.map((trigger) => trigger)} visitaram seu alvo: ${Sactions[i].target}` });
+                            updateDoc((ref), { newResponse: `Os jogadores ${ocurrences.map((trigger) => trigger)} visitaram seu alvo: ${Sactions[i].target}` });
                         } else {
                             updateDoc((ref), { newResponse: `Ninguém ativou a sua armadilha essa noite!` });
+                        }
+                        break; 
+                    case 'armadilheiro':
+                        let peopleThatLeftTheirHome = visitsThatOccured.filter((visit) => visit.visitor === Sactions[i].target);
+                        if (peopleThatLeftTheirHome.length > 0) {
+                            updateDoc((ref), { newResponse: `Seu alvo visitou alguém essa noite.` });
+                        } else {
+                            updateDoc((ref), { newResponse: `Seu alvo não saiu de casa essa noite.` });
                         }
                         break;                  
                     case 'curandeira':
@@ -569,7 +567,7 @@ const Night = () => {
 
             if (murderedPlayers[i].attackerRole === 'mestre' && zeladorTarget === true) {
             const killThisMFucker = players.filter((player) => player.playerName === murderedPlayers[i].killedPlayerName);
-                await updateDoc(doc(database, "playeradmin", "players", user.email, killThisMFucker[0].id), { life: "dead", cultChoice: false, newResponse: `Você está morto, sua função não poderá ser revelada e nem o agressor.` })
+                await updateDoc(doc(database, "playeradmin", "players", user.email, killThisMFucker[0].id), { life: "dead", cultChoice: false, zeladorClear: true, newResponse: `Você está morto, sua função não poderá ser revelada e nem o agressor.` })
                 await addDoc(eventsDatabase, {
                     killedPlayer: murderedPlayers[i].killedPlayerName,
                     killedPlayerRole: 'O Zelador Esteve por aqui!',

@@ -23,6 +23,7 @@ import revivalCallEffect from "../../assets/daysounds/revivalCallEffect.mp3"
 import ActiveRevivalEffect from "../../assets/daysounds/ActiveRevivalEffect.mp3"
 import ocultistVictoryEffect from "../../assets/daysounds/OcultistVictory.mp3"
 import boneBreakSoundEffect from "../../assets/daysounds/boneBreakSoundEffect.mp3"
+import handBellSoundEffect from "../../assets/daysounds/handBellSoundEffect.mp3"
 import bombSvg from "../../assets/svgs/bomb-svg.svg"
 import bulletSvg from "../../assets/svgs/bullet-svg.svg"
 import wingSvg from "../../assets/svgs/wing-svg.svg"
@@ -31,6 +32,7 @@ const Day = () => {
     // sound effects
     const [playJulgamentoSound] = useSound(julgamentoSound);
     const [playFizzleSound] = useSound(bombFizzle);
+    const [playHandBellSoundEffect] = useSound(handBellSoundEffect);
     const [playBombSound] = useSound(bombBoom);
     const [PlayboneBreakSoundEffect] = useSound(boneBreakSoundEffect);
     const [playmorteSound] = useSound(morteSound);
@@ -46,27 +48,40 @@ const Day = () => {
     const [playApocalipseMusic] = useSound(apocalipseMusic);
     const [playOcultistVictoryEffect] = useSound(ocultistVictoryEffect);
     const [isOpen, setIsOpen] = useState(true);
+    const [judgementTarget, setJudgementTarget] = useState([])
     const [judgementPanelIsOpen, setJudgementPanelIsOpen] = useState(false);
+    const [prefeitoPanelisOpen, setPrefeitoPanelisOpen] = useState(false);
     const [adminPanelIsOpen, setAdminPanelIsOpen] = useState(false);
     const [plaguePanelIsOpen, setPlaguePanelIsOpen] = useState(false);
     const [jesterPanelIsOpen, setJesterPanelIsOpen] = useState(false);
+    const [prefeitoChoice, setPrefeitoChoice] = useState('');
+    const [judgementvoting, setJudgementvoting] = useState(false);
     const [killPanelIsOpen, setKillPanelIsOpen] = useState(false);
     const [openOcultistModal, setOpenOcultistModal] = useState(false);
     const [apocalipsePanelIsOpen, setApocalipsePanelIsOpen] = useState(false);
+    const [judgeCultFollowers, setJudgeCultFollowers] = useState(false);
+    const [judgeCultResultModal, setJudgeCultResultModal] = useState(false);
+    const [judgeCultResponse, setJudgeCultResponse] = useState('');
     const [is2ModalOpen, setIs2ModalOpen] = useState(false);
     const [isReviveModalOpen, setIsReviveModalOpen] = useState(false);
     const [notifierNewsIsOpen, setNotifierNewsIsOpen] = useState(false);
     const [updatePanelInfo, setUpdatePanelInfo] = useState(false);
     const [posiviteCounter, setPosiviteCounter] = useState(0)
     const [negativeCounter, setNegativeCounter] = useState(0)
+    const [negativeCultCounter, setNegativeCultCounter] = useState(0)
+    const [positiveCultCounter, setPositiveCultCounter] = useState(0)
     const [notifierNews, setNotifierNews] = useState('')
     const [user, setUser] = useState([]);
+    const [judgementCounter, setJudmentCounter] = useState(0);
     const [players, setPlayers] = useState([]);
     const [alivePlayers, setAlivePlayers] = useState([]);
     const [deadPlayers, setDeadPlayers] = useState([]);
     const [townRole, setTownRole] = useState([]);
     const [covenRole, setCovenRole] = useState([]);
     const [horsemenRole, setHorsemenRole] = useState([]);
+    const [allAcusations, setAllAcusations] = useState([]);
+    const [allAcusationsKillingVotes, setAllAcusationsKillingVotes] = useState([]);
+    const [allCultAcusationsKillingVotes, setAllCultAcusationsKillingVotes] = useState([]);
     const [cultRole, setCultRole] = useState([]);
     const [mafiaRole, setMafiaRole] = useState([]);
     const [neutralRole, setNeutralRole] = useState([]);
@@ -80,6 +95,11 @@ const Day = () => {
     const [killAnouncementUpdate, setKillAnouncementUpdate] = useState('');
     const [visitAction, setVisitAction] = useState([]);
     
+
+    useEffect(() => {
+        const timer =  judgementCounter > 0 && setInterval(() => setJudmentCounter(judgementCounter - 1), 1000)
+        return () => clearInterval(timer);
+    }, [judgementCounter])
     useEffect(() => {
         const loadUserInformation = () => {
             const userDetail = localStorage.getItem("UserLogin");
@@ -113,7 +133,8 @@ const Day = () => {
                             newResponse: doc.data().newResponse,
                             doused: doc.data().doused,
                             actionforRoleCounter: doc.data().actionforRoleCounter,
-                            cultChoice: doc.data().cultChoice
+                            cultChoice: doc.data().cultChoice,
+                            zeladorClear: doc.data().zeladorClear
                         })
                     }
                 })
@@ -146,7 +167,8 @@ const Day = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
                 })
             })
             setTownRole(roles)
@@ -163,7 +185,8 @@ const Day = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
                 })
             })
             setMafiaRole(roles);
@@ -179,7 +202,8 @@ const Day = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
                 })
             })
             setCovenRole(roles);
@@ -196,7 +220,8 @@ const Day = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
 
                 })
             })
@@ -214,7 +239,8 @@ const Day = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
 
                 })
             })
@@ -232,7 +258,8 @@ const Day = () => {
                     wakeOrder: doc.data().wakeOrder,
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
-                    multiple: doc.data().multiple
+                    multiple: doc.data().multiple,
+                    category: doc.data().category
 
                 })
             })
@@ -244,7 +271,7 @@ const Day = () => {
 
         function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole, cultRole) {
             setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole, ...cultRole])
-           
+           console.log(allRoles)
         }
         addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole);
 
@@ -288,6 +315,47 @@ const Day = () => {
                 })
                 setAllPublicEvents(temp);
             })
+            const accusations = onSnapshot(collection(database, `playeradmin/judgementAction/judgementAcusations`), (snapshot) => {
+                let temp = [];
+                snapshot.forEach((doc) => {
+                    temp.push({
+                        acuser: doc.data().acuser,
+                        acuserName: doc.data().acuserName,
+                        acused: doc.data().acused,
+                        acusedName: doc.data().acusedName,
+                        value: doc.data().value,
+                        id: doc.id,
+                        key: doc.id
+                    })
+                })
+                setAllAcusations(temp);
+            })
+            const accusationKills = onSnapshot(collection(database, `playeradmin/judgementAction/judgementKillingAction`), (snapshot) => {
+                let temp = [];
+                snapshot.forEach((doc) => {
+                    temp.push({
+                        voter: doc.data().voter,
+                        vote: doc.data().vote,
+                        value: doc.data().value,
+                        id: doc.id,
+                        key: doc.id
+                    })
+                })
+                setAllAcusationsKillingVotes(temp);
+            })
+            const accusationsKillsCult = onSnapshot(collection(database, `playeradmin/judgementAction/judgementCultKillingAction`), (snapshot) => {
+                let temp = [];
+                snapshot.forEach((doc) => {
+                    temp.push({
+                        voter: doc.data().voter,
+                        vote: doc.data().vote,
+                        value: doc.data().value,
+                        id: doc.id,
+                        key: doc.id
+                    })
+                })
+                setAllCultAcusationsKillingVotes(temp);
+            })
         }
         importData();
     }, [user.email])
@@ -301,7 +369,7 @@ const Day = () => {
 
         // Limpando o todos status effects
         for (let i = 0; i < players.length; i++){
-            updateDoc(doc(database, `playeradmin/players/${user.email}/${players[i].id}`), { newResponse: "", buff: "", debuff: "", clownBomb: false, pistoleiroMark: false, doused: false, executorTarget: false, cultChoice: false });
+            updateDoc(doc(database, `playeradmin/players/${user.email}/${players[i].id}`), { newResponse: "", buff: "", debuff: "", clownBomb: false, pistoleiroMark: false, doused: false, executorTarget: false, cultChoice: false, zeladorClear: false });
         }
         await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "dayCounter", "dayCounter", "dayCounter"), { currentDay: 1 })
         navigateToNight('/playerrole')
@@ -327,12 +395,12 @@ const Day = () => {
         stopDayMusic()
         for (let i = 0; i < playerbombed.length; i++){
             let num = Math.random();
-            if (num < 0.75) {
+            if (num < 0.60) {
                 playBombSound();
                 setTimeout(() => {
                     setKillPanelIsOpen(true);
                     updateDoc(doc(database, "playeradmin", "players", user.email, playerbombed[0].id), { life: "dead", clownBomb: false })
-                }, 9000);
+                }, 12000);
                 setKillAnouncementUpdate(`O jogador ${playerbombed[0].playerName} explodiu. Sua função era ${playerbombed[0].role}`)
             } else {
                 playFizzleSound();
@@ -417,8 +485,35 @@ const Day = () => {
         filliationChecks();
         navigateToNight('/night');
     }
-    const judgement = () => {
+    const judgementStartPeriod = (factor) => {
+        setJudgementvoting(false)
+        setPrefeitoPanelisOpen(false)
+        updateDoc(doc(database, "playeradmin", "counters", "counters", "judgementCounter"), { counter: 0 })
+        const judgementCounters = {}
+        allAcusations.forEach(obj => {
+            const value = obj.acused
+            judgementCounters[value] = (judgementCounters[value] || 0) + obj.value;
+            console.log(judgementCounters)
+
+        });
+        let mostRepeatedValue;
+        let maxCounter = 0;
+        for (const value in judgementCounters) {
+            if (judgementCounters[value] > maxCounter) {
+                maxCounter = judgementCounters[value];
+              mostRepeatedValue = value;
+            }
+        }
+        let ChosenTarget = ''
+        if (factor) {
+            ChosenTarget = alivePlayers.filter(player => player.id === prefeitoChoice);
+        } else {
+            ChosenTarget = alivePlayers.filter(player => player.id === mostRepeatedValue);
+        }
+        setJudgementTarget({ target: ChosenTarget[0].id, targetName: ChosenTarget[0].playerName, votes: maxCounter });
         setJudgementPanelIsOpen(true);
+        updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "judgementKilling" })
+        updateDoc(doc(database, "playeradmin", "counters", "counters", "judgementKillCounter"), { counter: 60, target: ChosenTarget[0].playerName, votes: maxCounter})
         playJulgamentoSound();
         stopDayMusic();
     }
@@ -428,9 +523,12 @@ const Day = () => {
 
     }
     const playerjudgementAction = () => {
-        if (posiviteCounter > negativeCounter) {
+        const positiveVotes = 0 + allAcusationsKillingVotes.filter((acusation) => acusation.vote === 'culpado').map((acuse) => acuse.value).reduce(function (a,b) { return a + b }, 0)
+        const negativeVotes = 0 + allAcusationsKillingVotes.filter((acusation) => acusation.vote === 'inocente').map((acuse) => acuse.value).reduce(function (a, b) { return a + b }, 0)
+        if (positiveVotes > negativeVotes) {
             playmorteSound();
-            const target = alivePlayers.filter(player => { return player.playerName === playerKilling });
+            const target = alivePlayers.filter(player => { return player.id === judgementTarget.target });
+            console.log(target)
             updateDoc(doc(database, "playeradmin", "players", user.email, target[0].id), { life: "dead" })
             setJudgementPanelIsOpen(false);
             if (target[0].role === 'peste') {
@@ -445,6 +543,19 @@ const Day = () => {
                         stopDayMusic();
                         playJesterDeathMusic();
                         setJesterPanelIsOpen(true);
+                    }, 5000)
+                } else if (target[0].role === 'ocultista') {
+                    setTimeout(() => {
+                        const cultFollowers = alivePlayers.filter(player => player.cultChoice === true);
+                        if (cultFollowers.length > 0) {
+                            setJudgeCultFollowers(true);
+                            stopDayMusic();
+                            updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "cultKilling" })
+                        } else {
+                            setKillPanelIsOpen(true)
+                            setKillAnouncementUpdate(`O jogador ${target[0].playerName} foi julgado. Sua função era ${target[0].role}`)
+                            playDramaticDeathMusic();
+                        }
                     }, 5000)
                 }
                 else {
@@ -468,13 +579,31 @@ const Day = () => {
             playCancelEffectMusic();
             setTimeout(() => {
                 playDayMusic();
-            }, 2000);
+            }, 10000);
         }
         setPosiviteCounter(0);
         setNegativeCounter(0);
+        for (let i = 0; i < allAcusations.length; i++){
+            const theRef = doc(database, `playeradmin/judgementAction/judgementAcusations`, allAcusations[i].id)
+            deleteDoc(theRef)
+        }
+        for (let i = 0; i < allAcusationsKillingVotes.length; i++){
+            const theRef = doc(database, `playeradmin/judgementAction/judgementKillingAction`, allAcusationsKillingVotes[i].id)
+            deleteDoc(theRef)
+        }
+        updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "dia" })
     }
     const savePlayer = () => {
         setJudgementPanelIsOpen(false);
+        updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "dia" })
+        for (let i = 0; i < allAcusations.length; i++){
+            const theRef = doc(database, `playeradmin/judgementAction/judgementAcusations`, allAcusations[i].id)
+            deleteDoc(theRef)
+        }
+        for (let i = 0; i < allAcusationsKillingVotes.length; i++){
+            const theRef = doc(database, `playeradmin/judgementAction/judgementKillingAction`, allAcusationsKillingVotes[i].id)
+            deleteDoc(theRef)
+        }   
         setTimeout(() => {
             playDayMusic();
         }, 2000);
@@ -554,6 +683,64 @@ const Day = () => {
             playOcultistVictoryEffect();
             setOpenOcultistModal(true)
         }
+
+        const filteredAnnouncements = announcements.filter(announcement => announcement.killedPlayerRole === 'ocultista');
+
+        if (filteredAnnouncements.length > 0 && cultFollowers.length > 0) {
+            setJudgeCultFollowers(true);
+            stopDayMusic();
+            updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "cultKilling" })
+        }
+    }
+    const judgeTheCultFollowers = () => {
+        const positiveVotes = 0 + allCultAcusationsKillingVotes.filter((acusation) => acusation.vote === 'culpado').map((acuse) => acuse.value).reduce(function (a,b) { return a + b }, 0)
+        const negativeVotes = 0 + allCultAcusationsKillingVotes.filter((acusation) => acusation.vote === 'inocente').map((acuse) => acuse.value).reduce(function (a, b) { return a + b }, 0)
+        const allCultFollowers = alivePlayers.filter(player => player.cultChoice === true);
+        updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "dia" })
+        if (positiveVotes > negativeVotes) {
+            setJudgeCultResponse(`Os jogadores ${allCultFollowers.map((pl) => `${pl.playerName} com a função de ${pl.role}`).join(", ")} não foram perdoados e agora vão queimar com seu lider`)
+            console.log(allCultFollowers)
+            setJudgeCultResultModal(true)
+            for (let i = 0; i < allCultFollowers.length; i++){
+                updateDoc(doc(database, "playeradmin", "players", user.email, allCultFollowers[i].id), { life: "dead", cultChoice: false })
+            }
+            // KILL THE CULT FOLLOWERS
+        } else {
+            setJudgeCultResponse(`Os jogadores ${allCultFollowers.map(pl => (pl.playerName))}  foram perdoados e agora vão continuar na nossa cidade devido a bondade de todos.`)
+            setJudgeCultResultModal(true)
+            for (let i = 0; i < allCultFollowers.length; i++){
+                updateDoc(doc(database, "playeradmin", "players", user.email, allCultFollowers[i].id), {cultChoice: false })
+            }
+
+            // dont kill the cult followers
+        }
+        playDayMusic()
+        for (let i = 0; i < allCultAcusationsKillingVotes.length; i++){
+            const theRef = doc(database, `playeradmin/judgementAction/judgementCultKillingAction`, allCultAcusationsKillingVotes[i].id)
+            deleteDoc(theRef)
+        }
+        setJudgeCultFollowers(false)
+    }
+
+    const startPrefeitoJudgement = () => {
+        setPrefeitoPanelisOpen(true);
+        setJudgementPanelIsOpen(false);
+    }
+    const startJudgementAcusationPeriod = () => {
+        playHandBellSoundEffect();
+        setJudmentCounter(120);
+        setJudgementvoting(true);
+        updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "judgementVoting" })
+        updateDoc(doc(database, "playeradmin", "counters", "counters", "judgementCounter"), { counter: 60})
+    }
+    const endJudgementAcusationPeriod = () => {
+        setJudgementvoting(false)
+        updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "dia" })
+        for (let i = 0; i < allAcusations.length; i++){
+            const theRef = doc(database, `playeradmin/judgementAction/judgementAcusations`, allAcusations[i].id)
+            deleteDoc(theRef)
+        }
+        updateDoc(doc(database, "playeradmin", "counters", "counters", "judgementCounter"), { counter: 0})
     }
     return (
         <div className="day">
@@ -564,28 +751,16 @@ const Day = () => {
 
             <div className="dayMain">
                 <Popup open={isOpen} modal closeOnDocumentClick={false}>
-                {currentDay === 1 ? (
                     <div className="modalNight">
                     <div className="header">Para iniciar o dia, clique abaixo! </div>
                     <div className="content">
 
-                        <button className="button" onClick={dayPrompt}>Iniciar Dia</button>
+                        <button className="button" onClick={currentDay === 1 ? dayPrompt : dayPrompt2}>Iniciar Dia</button>
                         <div className="contentRead">
 
                         </div>
                     </div>
                     </div>
-                    ) : (
-                        <div className="modalNight">
-                        <div className="header">Para começar o dia, clique abaixo! </div>
-                        <div className="content">
-  
-                            <button className="button" onClick={dayPrompt2}>Iniciar Dia</button>
-
-                        </div>
-                        </div>
-                        )}
-                    
                 </Popup>
                 <Popup open={is2ModalOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
@@ -624,7 +799,8 @@ const Day = () => {
                         ))}
                                 {alivePlayers.filter(player => player.buff !== '').map(player => (
                             <p>{player.playerName} está Motivado!</p>
-                        ))}
+                                ))}
+                                
                                 <span>
                                     {updatePanelInfo}
                                 </span>
@@ -735,13 +911,14 @@ const Day = () => {
                                 {player.filliation === 'coven' && <p className="covenies">{player.role}</p>}
                                 {player.filliation === 'horsemen' && <p className="horsies">{player.role}</p>}
                                 {player.filliation === 'neutral' && <p className="neutraies">{player.role}</p>}
+                                {player.filliation === 'cult' && <p className="cultisties">{player.role}</p>}
                             </span>
                                     ))}
                     </div>
                 </div>
                 <div className="event-killplayer event">
                     <div className="event-killplayer-inner">
-                        <button type="button" onClick={judgement} className="button">Julgamento</button>
+                        <button type="button" onClick={startJudgementAcusationPeriod} className="button">Liberar Votação de Julgamento</button>
                         <button type="button" onClick={startNight} className="button">Começar Noite</button>
                         <button className="button" onClick={adminPanel}>Administrativo</button>
 
@@ -751,6 +928,60 @@ const Day = () => {
             </div>
             <div className="upper-page-area">
             </div>
+            <Popup open={judgementvoting} modal closeOnDocumentClick={false}>
+                    <div className="modalNight">
+                    <div className="header">
+                        Votos para julgamento
+                    </div>
+                    <div className="content judgementBox">
+                        {alivePlayers.map((player) => (
+                            <div className="voteLines">
+                                <span className="counterBox">
+                                { 0 + allAcusations.filter((acusation) => acusation.acused === player.id).map((particular) => particular.value).reduce( function(a,b){return a + b}, 0)}
+                                </span>
+                            {player.playerName}
+                            </div>
+                        ))}
+                        
+                    </div>
+                    <div className="voteLines">
+                        <span className="voteLines">
+                        Jogadores:  <span className="counterBox">
+                        {alivePlayers.length}
+                        </span>
+                        </span>
+                        <span className="voteLines">
+                        Votos Necessários:  <span className="counterBox">
+                        {Math.ceil(alivePlayers.length * 0.4)}
+                        </span>
+                        </span>
+                         
+                    </div>
+                    <span>Timer: {judgementCounter} segundos </span>
+                    <button className="button" onClick={() => judgementStartPeriod(false)}>Iniciar Julgamento</button>
+                    <button className="button" onClick={() => endJudgementAcusationPeriod()}>Encerrar Acusações</button>
+                    </div>
+                    
+            </Popup>
+            <Popup open={prefeitoPanelisOpen} modal closeOnDocumentClick={false}>
+                    <div className="modalNight">
+                    <div className="header">
+                        Selecione o Alvo do Prefeito
+                    </div>
+                    <div className="content judgementPrefeito">
+                                <select name="prefeitoChoice" id="prefeitoChoice" value={prefeitoChoice} onChange={(e) => setPrefeitoChoice(e.target.value)}>
+                                    {alivePlayers.map((player) => (
+                                        <option value={player.id}>{player.playerName}</option>
+                                    ))}
+                                </select>
+    
+                        
+                    </div>
+                    <span>Timer: {judgementCounter} segundos </span>
+                    <button className="button" onClick={() => judgementStartPeriod(true)}>Iniciar Julgamento</button>
+                    </div>
+                    
+            </Popup>
             <Popup open={adminPanelIsOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
                     <div className="header">Painel Administrativo, Use apenas para EMERGENCIAS </div>
@@ -858,43 +1089,67 @@ const Day = () => {
                     </div>
                     
             </Popup>
+            <Popup open={judgeCultFollowers} modal closeOnDocumentClick={false}>
+                    <div className="modalNight">
+                    <div className="header">O Ocultista morreu. Julgaremos seus seguidores </div>
+                    <div className="contentDeathAnouncement">
+                        O Ocultista {deadPlayers.filter(player => player.filliation === 'cult').map(pl => (pl.playerName))} morreu essa noite. Seus seguidores: {alivePlayers.filter(player => player.cultChoice === true).map(pl => (<p key={pl.id}>{pl.playerName}</p>))} estão agora sem um lider e gostariam do perdão da cidade para que eles possam se livrar desse peso.
+                        Votem para mata-los ou salva-los.
+                        <span>
+                                Votos positivos:
+                                    {0 + allCultAcusationsKillingVotes.filter((acusation) => acusation.vote === 'inocente').map((acuse) => acuse.value).reduce(function (a,b) { return a + b }, 0)}
+                        </span>
+                        <span>
+                                Votos Negativos: {0 + allCultAcusationsKillingVotes.filter((acusation) => acusation.vote === 'culpado').map((acuse) => acuse.value).reduce(function (a,b) { return a + b }, 0)}
+                        </span>
+                    <button className="button" onClick={judgeTheCultFollowers}>Julgar</button>
+                        
+                    </div>
+                    </div>
+                    
+            </Popup>
+            <Popup open={judgeCultResultModal} modal closeOnDocumentClick={false}>
+                    <div className="modalNight">
+                    <div className="header">Resultado:</div>
+                    <div className="contentDeathAnouncement">
+                    {judgeCultResponse}
+                    <button className="button" onClick={() => setJudgeCultResultModal(false)}>Fechar</button>
+                    </div>
+                    </div>
+                    
+            </Popup>
             <Popup open={judgementPanelIsOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Painel de Julgamento </div>
+                    <div className="header">Painel de Julgamento</div>
                     <div className="content modalNotifier modalkill">
-                    <p>Selecione o jogador para ser julgado:</p>
-                        <select name="playerName" id="playerName" value={playerKilling} onChange={(e) => setPlayerKilling(e.target.value)}>
-                            <option value="" defaultValue disabled hidden></option>
-                            {alivePlayers.map(player => (
-                                <option key={player.key}>{player.playerName}</option>
-                            ))}
-                        </select>
+                        <p>Jogador Acusado: {judgementTarget?.targetName} </p>
+                        <p>Com um total de {judgementTarget?.votes} votos</p>
                         <div className="voteCountMain">
                         
                         <div className="voteCountCard">
-
-                            <label htmlFor="posiviteVotes" className="voteCountInput">A Favor</label>
-                                <input name="posiviteVotes" type="number" value={posiviteCounter} onChange={(e) => setPosiviteCounter(e.target.value)} max={40} min={0}/>
-                                <span className="buttoncontainer">
-
-                                <button className="miniButton miniButtonLeft" onClick={() => {setPosiviteCounter(posiviteCounter + 1)}}> + </button>
-                                <button className="miniButton miniButtonRight" onClick={() => {setPosiviteCounter(posiviteCounter - 1)}}> - </button>
+                                <span>Inocente</span>
+                                <span className="counterBox">
+                                    {0 + allAcusationsKillingVotes.filter((acusation) => acusation.vote === 'inocente').map((acuse) => acuse.value).reduce(function (a,b) { return a + b }, 0)}
+                            </span>
+                        </div>
+                        <div className="voteCountCard">
+                                <span>Abster</span>
+                                <span className="counterBox">
+                                    {0 + allAcusationsKillingVotes.filter((acusation) => acusation.vote === 'abster').map((acuse) => acuse.value).reduce(function (a,b) { return a + b }, 0)}
                             </span>
                         </div>
                         <div className="voteCountCard">
 
-                            <label htmlFor="negativeVotes" className="voteCountInput">Contra</label>
-                                <input name="negativeVotes" type="number" value={negativeCounter} onChange={(e) => setNegativeCounter(e.target.value)} max={40} min={0}/>
-                                <span className="buttoncontainer">
-
-                                <button className="miniButton miniButtonLeft" onClick={() => {setNegativeCounter(negativeCounter + 1)}}> + </button>
-                                <button className="miniButton miniButtonRight" onClick={() => {setNegativeCounter(negativeCounter - 1)}}> - </button>
+                            <span>Culpado</span>
+                                <span className="counterBox">
+                                    {0 + allAcusationsKillingVotes.filter((acusation) => acusation.vote === 'culpado').map((acuse) => acuse.value).reduce(function (a,b) { return a + b }, 0)}
                                 </span>
                             
                             </div>
                         </div>
                         <button className="button" onClick={playerjudgementAction}>Confirmar Votos</button>
-                        <button className="button" onClick={savePlayer}>Cancelar</button>
+                        <button className="button" onClick={savePlayer}>Cancelar Votação</button>
+                        <button className="button" onClick={startPrefeitoJudgement}>Cancelamento do Prefeito</button>
                     </div>
                     </div>
                     

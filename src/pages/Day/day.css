@@ -14,7 +14,11 @@
     align-items: center;
     flex-direction: column;
 }
-
+.judgementBox{
+    display: grid;
+    grid-template-columns: 33% 33% 33%;
+    width: 80%;
+}
 .dayMain{
     display: grid;
     grid-template-rows: 1fr 1fr 1fr;
@@ -133,9 +137,6 @@ p{
 .voteCountCard input{
  width: 30px;
 }
-.voteCountCard .voteCountInput{
-
-}
 .contentDeathAnouncement{
     display: flex;
     flex-direction: column;
@@ -148,6 +149,9 @@ p{
 }
 .voteCountMain{
     display: flex;
+    justify-content: space-around;
+    width: 100%;
+    margin: 10px 0px;
 }
 
 .trigger{
