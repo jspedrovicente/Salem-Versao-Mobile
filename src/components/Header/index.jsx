@@ -6,8 +6,8 @@ const Header = () => {
         
         <div className='header'>
             <img className='smallLogoStyling' src={logomarca} alt="" />
-            <h3> A Aquisição de Salem
-            </h3>
+            <h2> O Vilarejo
+            </h2>
         </div>
         )
 }

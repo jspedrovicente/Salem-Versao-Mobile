@@ -3,7 +3,16 @@
     justify-content: center;
     align-items: center;
     padding-top: 10px;
-    color: #B0B159;
+    color: #E2C391;
+    font-family: 'buffiedregular';
+    padding-bottom: 30px;
+}
+.headerz{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding-top: 10px;
+    color: #E2C391;
     padding-bottom: 30px;
 }
 

@@ -50,7 +50,6 @@ const Victory = () => {
             snapshot.forEach((doc) => {
                 blk.push({fact: doc.data().blackout })
             })
-            console.log(blk);
             setBlackout(blk);
         })
         loadPlayers();

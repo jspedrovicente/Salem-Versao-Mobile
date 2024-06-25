@@ -1,5 +1,5 @@
 import "./day.css"
-import { setDoc, doc, addDoc, collection, onSnapshot, deleteDoc, updateDoc } from "firebase/firestore";
+import { addDoc, doc, collection, onSnapshot, deleteDoc, updateDoc } from "firebase/firestore";
 import { useEffect, useState } from "react";
 import { database } from "../../firebaseConnection";
 import { useNavigate } from "react-router-dom";
@@ -7,37 +7,45 @@ import Popup from 'reactjs-popup';
 import 'reactjs-popup/dist/index.css';
 import useSound from "use-sound";
 import julgamentoSound from "../../assets/julgamento-soundeffect.mp3"
+import witchJudgementSound from "../../assets/daysounds/julgament-witch-soundeffect.mp3"
 import morteSound from "../../assets/morte-soundeffect.mp3"
 import bombFizzle from "../../assets/bomb fizzle effect.mp3"
 import bombBoom from "../../assets/bomb effect.mp3"
 import gunSound from "../../assets/gun shot effect.mp3"
 import dayMusic from "../../assets/daysounds/daymusic.mp3"
 import roosterEffect from "../../assets/daysounds/rooster-soundeffect.mp3"
-import deadEffectMusic from "../../assets/daysounds/sadDeathMusic.mp3"
+import bloodmoonmusic from "../../assets/daysounds/bloodmoonmusic.mp3"
 import cancelEffectMusic from "../../assets/daysounds/cancelDeathMusic.mp3"
 import pesteDeathMusic from "../../assets/daysounds/pesteDeathlongeffect.mp3"
 import dramaticDeathMusic from "../../assets/daysounds/dramaticMusic.mp3"
+import handBellSoundEffect from "../../assets/daysounds/handBellSoundEffect.mp3"
 import jesterDeathMusic from "../../assets/daysounds/jesterDeathEffect.mp3"
+import witchBloodMoon from "../../assets/nightsounds/witchBloodMoonVictorySound.mp3"
 import apocalipseMusic from "../../assets/daysounds/ApocalipseVictoryMusic.mp3"
 import revivalCallEffect from "../../assets/daysounds/revivalCallEffect.mp3"
 import ActiveRevivalEffect from "../../assets/daysounds/ActiveRevivalEffect.mp3"
 import ocultistVictoryEffect from "../../assets/daysounds/OcultistVictory.mp3"
 import boneBreakSoundEffect from "../../assets/daysounds/boneBreakSoundEffect.mp3"
-import handBellSoundEffect from "../../assets/daysounds/handBellSoundEffect.mp3"
+import widowMourningSound from "../../assets/daysounds/widowCry.mp3"
+import potionNothingSoundEffect from "../../assets/daysounds/potionNothingSoundEffect.mp3"
+import potionKillingSoundEffect from "../../assets/daysounds/potionKillingSoundEffect.mp3"
+import potionPoisonSoundEffect from "../../assets/daysounds/potionPoisonSoundEffect.mp3"
 import bombSvg from "../../assets/svgs/bomb-svg.svg"
-import bulletSvg from "../../assets/svgs/bullet-svg.svg"
 import wingSvg from "../../assets/svgs/wing-svg.svg"
+import potionSvg from "../../assets/svgs/potion-svg.svg"
 const Day = () => {
-
     // sound effects
-    const [playJulgamentoSound] = useSound(julgamentoSound);
+    const [playJulgamentoSound] = useSound(julgamentoSound, {volume: 4.00});
+    const [playWitchBloodMoonVictorySound] = useSound(witchBloodMoon);
+    const [playWidowMourning] = useSound(widowMourningSound);
+    const [playWitchJuldgementSound] = useSound(witchJudgementSound);
     const [playFizzleSound] = useSound(bombFizzle);
     const [playHandBellSoundEffect] = useSound(handBellSoundEffect);
     const [playBombSound] = useSound(bombBoom);
     const [PlayboneBreakSoundEffect] = useSound(boneBreakSoundEffect);
     const [playmorteSound] = useSound(morteSound);
     const [playGunSound] = useSound(gunSound);
-    const [playDayMusic, { stop: stopDayMusic }] = useSound(dayMusic);
+    const [playDayMusic, { stop: stopDayMusic }] = useSound(dayMusic, { volume: 0.25 });
     const [playRoosterSound] = useSound(roosterEffect, { volume: 0.60 });
     const [playCancelEffectMusic] = useSound(cancelEffectMusic);
     const [playPesteDeathMusic] = useSound(pesteDeathMusic);
@@ -47,11 +55,16 @@ const Day = () => {
     const [playDramaticDeathMusic, { stop: stopDramaticDeathMusic }] = useSound(dramaticDeathMusic);
     const [playApocalipseMusic] = useSound(apocalipseMusic);
     const [playOcultistVictoryEffect] = useSound(ocultistVictoryEffect);
+    const [playPoisonPotionSound] = useSound(potionPoisonSoundEffect);
+    const [startBloodmoonMusic, { stop: stopBloodMoonMusic}] = useSound(bloodmoonmusic);
+    const [playKillingPotionSound] = useSound(potionKillingSoundEffect);
+    const [playNothingPotionSound] = useSound(potionNothingSoundEffect);
     const [isOpen, setIsOpen] = useState(true);
     const [judgementTarget, setJudgementTarget] = useState([])
     const [judgementPanelIsOpen, setJudgementPanelIsOpen] = useState(false);
     const [prefeitoPanelisOpen, setPrefeitoPanelisOpen] = useState(false);
     const [adminPanelIsOpen, setAdminPanelIsOpen] = useState(false);
+    const [winnerPanelIsOpen, setWinnerPanelIsOpen] = useState(true);
     const [plaguePanelIsOpen, setPlaguePanelIsOpen] = useState(false);
     const [jesterPanelIsOpen, setJesterPanelIsOpen] = useState(false);
     const [prefeitoChoice, setPrefeitoChoice] = useState('');
@@ -63,6 +76,7 @@ const Day = () => {
     const [judgeCultResultModal, setJudgeCultResultModal] = useState(false);
     const [judgeCultResponse, setJudgeCultResponse] = useState('');
     const [is2ModalOpen, setIs2ModalOpen] = useState(false);
+    const [covenBloodMoonEventIsOpen, setCovenBloodMoonEventIsOpen] = useState(false);
     const [isReviveModalOpen, setIsReviveModalOpen] = useState(false);
     const [notifierNewsIsOpen, setNotifierNewsIsOpen] = useState(false);
     const [updatePanelInfo, setUpdatePanelInfo] = useState(false);
@@ -71,11 +85,16 @@ const Day = () => {
     const [negativeCultCounter, setNegativeCultCounter] = useState(0)
     const [positiveCultCounter, setPositiveCultCounter] = useState(0)
     const [notifierNews, setNotifierNews] = useState('')
+    const [covenNews, setCovenNews] = useState('')
     const [user, setUser] = useState([]);
     const [judgementCounter, setJudmentCounter] = useState(0);
+    const [dayTimerCounter, setDayTimerCounter] = useState(0);
     const [players, setPlayers] = useState([]);
     const [alivePlayers, setAlivePlayers] = useState([]);
     const [deadPlayers, setDeadPlayers] = useState([]);
+    const [gritanteShriek, setGritanteShriek] = useState([]);
+    const [viuvaAnnouncement, setViuvaAnnouncement] = useState([]);
+    const [specialWinners, setSpecialWinners] = useState([]);
     const [townRole, setTownRole] = useState([]);
     const [covenRole, setCovenRole] = useState([]);
     const [horsemenRole, setHorsemenRole] = useState([]);
@@ -94,12 +113,24 @@ const Day = () => {
     const [playerKilling2, setPlayerKilling2] = useState('');
     const [killAnouncementUpdate, setKillAnouncementUpdate] = useState('');
     const [visitAction, setVisitAction] = useState([]);
+    const [flageloCounter, setFlageloCounter] = useState(0);
+    const [viuvaInfo, setViuvaInfo] = useState([]);
+    const [bloodmoonCount, setBloodmoonCount] = useState(99);
+    const [winnersofRound, setWinnersOfRound] = useState([]);
     
 
     useEffect(() => {
         const timer =  judgementCounter > 0 && setInterval(() => setJudmentCounter(judgementCounter - 1), 1000)
         return () => clearInterval(timer);
+
     }, [judgementCounter])
+
+    useEffect(() => {
+        const timer2 =  dayTimerCounter > 0 && setInterval(() => setDayTimerCounter(dayTimerCounter - 1), 1000)
+        return () => clearInterval(timer2);
+
+    }, [dayTimerCounter])
+
     useEffect(() => {
         const loadUserInformation = () => {
             const userDetail = localStorage.getItem("UserLogin");
@@ -119,6 +150,8 @@ const Day = () => {
                             key: doc.id,
                             playerName: doc.data().playerName,
                             victoryPoints: doc.data().victoryPoints,
+                            characterPoints: doc.data().characterPoints,
+                            specialPoints: doc.data().specialPoints,
                             role: doc.data().role,
                             filliation: doc.data().filliation,
                             life: doc.data().life,
@@ -134,7 +167,12 @@ const Day = () => {
                             doused: doc.data().doused,
                             actionforRoleCounter: doc.data().actionforRoleCounter,
                             cultChoice: doc.data().cultChoice,
-                            zeladorClear: doc.data().zeladorClear
+                            zeladorClear: doc.data().zeladorClear,
+                            roleType: doc.data().roleType,
+                            potionTime: doc.data().potionTime,
+                            poisoned: doc.data().poisoned,
+                            enchant: doc.data().enchant,
+                            intoxicated: doc.data().intoxicated
                         })
                     }
                 })
@@ -149,6 +187,50 @@ const Day = () => {
                     currentDayx = ({ currentDay: doc.data().currentDay })
                 })
                 setCurrentDay(currentDayx.currentDay)
+             })
+             const gritanteShriekSnapshot = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/gritanteShriek/gritanteShriek`), (snapshot) => {
+                let shriek = [];
+                snapshot.forEach((doc) => {
+                    shriek.push({ visitor: doc.data().visitor, id: doc.id })
+                })
+                setGritanteShriek(shriek)
+             })
+             const viuvaAnnouncementSnapshot = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/viuvaAnnouncement/viuvaAnnouncement`), (snapshot) => {
+                let shot = [];
+                snapshot.forEach((doc) => {
+                    shot.push({ target: doc.data().target, id: doc.id })
+                })
+                setViuvaAnnouncement(shot)
+             })
+             const specialWinners = onSnapshot(collection(database, `playeradmin/playerStatuses/${user.email}/specialWinners/specialWinners`), (snapshot) => {
+                let specialWinners = [];
+                snapshot.forEach((doc) => {
+                    specialWinners.push({ winner: doc.data().winner, id: doc.id })
+                })
+                setSpecialWinners(specialWinners)
+             })
+            
+            
+             const allCounters  = onSnapshot(collection(database, `playeradmin/counters/counters`), (snapshot) => {
+                    let counter = [];
+                 let blood = [];
+                 let viuvaInfo = [];
+                 let viuvaInformation = []
+                 snapshot.forEach((doc) => {
+                    
+                     if (doc.id === 'flageloCounter') {
+                         counter.push({ counter: doc.data().counter })
+                     }
+                     if (doc.id === 'covenBloodmoonCounter') {
+                         blood.push({counter: doc.data().counter})
+                     }
+                     if (doc.id === 'viuvaCounter') {
+                        viuvaInfo.push({counter: doc.data().counter, id: doc.id, viuvaTarget: doc.data().viuvaTarget})
+                     }
+                })
+                setFlageloCounter(counter[0].counter)
+                setBloodmoonCount(blood[0].counter)
+                setViuvaInfo(viuvaInfo)
             })
         }
     
@@ -168,7 +250,8 @@ const Day = () => {
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
                     multiple: doc.data().multiple,
-                    category: doc.data().category
+                    category: doc.data().category,
+                    roleType: doc.data().roleType
                 })
             })
             setTownRole(roles)
@@ -186,7 +269,8 @@ const Day = () => {
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
                     multiple: doc.data().multiple,
-                    category: doc.data().category
+                    category: doc.data().category,
+                    roleType: doc.data().roleType
                 })
             })
             setMafiaRole(roles);
@@ -203,7 +287,8 @@ const Day = () => {
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
                     multiple: doc.data().multiple,
-                    category: doc.data().category
+                    category: doc.data().category,
+                    roleType: doc.data().roleType
                 })
             })
             setCovenRole(roles);
@@ -221,7 +306,8 @@ const Day = () => {
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
                     multiple: doc.data().multiple,
-                    category: doc.data().category
+                    category: doc.data().category,
+                    roleType: doc.data().roleType
 
                 })
             })
@@ -240,7 +326,8 @@ const Day = () => {
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
                     multiple: doc.data().multiple,
-                    category: doc.data().category
+                    category: doc.data().category,
+                    roleType: doc.data().roleType
 
                 })
             })
@@ -259,7 +346,8 @@ const Day = () => {
                     actionforRoleCounter: doc.data()?.actionforRoleCounter,
                     enabledRole: doc.data().enabledRole,
                     multiple: doc.data().multiple,
-                    category: doc.data().category
+                    category: doc.data().category,
+                    roleType: doc.data().roleType
 
                 })
             })
@@ -271,7 +359,6 @@ const Day = () => {
 
         function addAllRoles(townRole, mafiaRole, covenRole, horsemenRole, neutralRole, cultRole) {
             setAllRoles([...townRole, ...mafiaRole, ...covenRole, ...horsemenRole, ...neutralRole, ...cultRole])
-           console.log(allRoles)
         }
         addAllRoles(covenRole, mafiaRole, townRole, horsemenRole, neutralRole, cultRole);
 
@@ -298,7 +385,7 @@ const Day = () => {
                         killedPlayerRole: doc.data().killedPlayerRole,
                         attackerRole: doc.data().attackerRole,
                         key: doc.id,
-                        id: doc.id
+                        id: doc.id,
                     })
                 })
                 setAnnouncements(lol);
@@ -362,19 +449,33 @@ const Day = () => {
     const endGameCompletely = async () => {
         updateDoc(doc(database, "playeradmin", "blackout", user.email, 'blackout'), { blackout: 'false' })
         updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "inicio"})
+        updateDoc(doc(database, "playeradmin", "counters", "counters", "covenBloodmoonCounter"), { counter: 99 }) 
 
         clearNeedlessData();
         stopDayMusic();
         stopDramaticDeathMusic();
-
+        clearAllUserEffects();
         // Limpando o todos status effects
-        for (let i = 0; i < players.length; i++){
-            updateDoc(doc(database, `playeradmin/players/${user.email}/${players[i].id}`), { newResponse: "", buff: "", debuff: "", clownBomb: false, pistoleiroMark: false, doused: false, executorTarget: false, cultChoice: false, zeladorClear: false });
+        
+        for (let i = 0; i < specialWinners.length; i++) {
+            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/specialWinners/specialWinners`, specialWinners[i].id)
+            deleteDoc(theRef);
         }
         await updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "dayCounter", "dayCounter", "dayCounter"), { currentDay: 1 })
+        await updateDoc(doc(database, "playeradmin", "counters", "counters", "flageloCounter"), { counter: 0 })
+        await updateDoc(doc(database, "playeradmin", "counters", "counters", "viuvaCounter"), { counter: 99 , viuvaTarget: ''})
+        await updateDoc(doc(database, "playeradmin", "counters", "counters", "invocadoraCounter"), { counter: 0, golemTarget: '' })
+
         navigateToNight('/playerrole')
     }
-    const clearNeedlessData = () => {
+    
+    const clearAllUserEffects = () => {
+        for (let i = 0; i < players.length; i++){
+            updateDoc(doc(database, `playeradmin/players/${user.email}/${players[i].id}`), { newResponse: "", buff: "", debuff: "", clownBomb: false, pistoleiroMark: false, doused: false, executorTarget: false, cultChoice: false, zeladorClear: false, potionTime: false, enchant: false, poisoned: false, intoxicated: false});
+        }
+
+    }
+    const clearNeedlessData = async () => {
         // clears visitAction
         for (let p = 0; p < visitAction.length; p++) {
             const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/visitAction/visitAction`, visitAction[p].id)
@@ -384,11 +485,19 @@ const Day = () => {
             const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/announcements/announcements`, announcements[i].id)
             deleteDoc(theRef);
         }
+        for (let i = 0; i < gritanteShriek.length; i++) {
+            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/gritanteShriek/gritanteShriek`, gritanteShriek[i].id)
+            deleteDoc(theRef);
+        }
+        for (let i = 0; i < viuvaAnnouncement.length; i++) {
+            const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/viuvaAnnouncement/viuvaAnnouncement`, viuvaAnnouncement[i].id)
+            deleteDoc(theRef);
+        }
         for (let i = 0; i < allPublicEvents.length; i++) {
             const theRef = doc(database, `playeradmin/playerStatuses/${user.email}/publicEvents/publicEvents`, allPublicEvents[i].id)
             deleteDoc(theRef)
-
         }
+
     }
     const explodeBomb = () => {
         const playerbombed = alivePlayers.filter((player) => player.clownBomb === true);
@@ -409,8 +518,42 @@ const Day = () => {
             }
         }
         setTimeout(() => {
-            playDayMusic();
+
+            playDayMusic({volume: 0.25});
        }, 10000) 
+
+    }
+    const explodePotion = () => {
+        const playerPotion = alivePlayers.filter((player) => player.potionTime === true);
+        stopDayMusic()
+        for (let i = 0; i < playerPotion.length; i++){
+            let num = Math.random();
+            if (num < 0.34) {
+                playNothingPotionSound();
+                setTimeout(() => {
+                    setKillPanelIsOpen(true);
+                    updateDoc(doc(database, "playeradmin", "players", user.email, playerPotion[0].id), {potionTime: false })
+                }, 15000);
+                setKillAnouncementUpdate(`A Poção do jogador ${playerPotion[0].playerName} não fez efeito nenhum.`)
+            } else if (num > 0.33 && num < 0.67) {
+                playKillingPotionSound();
+                setTimeout(() => {
+                    setKillPanelIsOpen(true);
+                    updateDoc(doc(database, "playeradmin", "players", user.email, playerPotion[0].id), { life: "dead", potionTime: false })
+                }, 13000);
+                setKillAnouncementUpdate(`A Poção do jogador ${playerPotion[0].playerName} o matou derretido, Sua função era: ${playerPotion[0].role}.`)
+            } else {
+                playPoisonPotionSound();
+                setTimeout(() => {
+                    setKillPanelIsOpen(true);
+                    updateDoc(doc(database, "playeradmin", "players", user.email, playerPotion[0].id), {potionTime: false, poisoned: true })
+                }, 20000);
+                setKillAnouncementUpdate(`A Poção do jogador ${playerPotion[0].playerName} era venenosa, o jogador morrerá essa noite caso não for curado.`)
+            }
+        }
+        setTimeout(() => {
+            playDayMusic({volume: 0.25});
+       }, 22000) 
 
     }
     const explodeMark = () => {
@@ -422,14 +565,29 @@ const Day = () => {
     }
     const revivePlayer = () => {
         setIsReviveModalOpen(false);
-        const target = deadPlayers.filter(player => { return player.playerName === playerKilling });
         const martir = alivePlayers.filter(player => player.role === 'martir')
-        updateDoc(doc(database, "playeradmin", "players", user.email, target[0].id), { life: "alive", newResponse: '', action: 'pending' });
-        updateDoc(doc(database, "playeradmin", "players", user.email, martir[0].id), { life: "dead" });
-        setKillPanelIsOpen(true);
-        setKillAnouncementUpdate(`O jogador ${target[0].playerName} foi ressucitado, o mártir ${martir[0].playerName} se sacrificou por essa troca.`)
+        if(martir.length > 0){
 
-        playActiveRevivalEffect();
+            const target = deadPlayers.filter(player => { return player.playerName === playerKilling });
+            updateDoc(doc(database, "playeradmin", "players", user.email, target[0].id), { life: "alive", newResponse: '', action: 'pending' });
+            updateDoc(doc(database, "playeradmin", "players", user.email, martir[0].id), { life: "dead" });
+            setKillPanelIsOpen(true);
+            setKillAnouncementUpdate(`O jogador ${target[0].playerName} foi ressucitado, o mártir ${martir[0].playerName} se sacrificou por essa troca.`)
+            console.log(target[0].id)
+            console.log(viuvaInfo)
+            for (let i = 0; i < viuvaInfo.length; i++){
+                if (target[0].id === viuvaInfo[i].viuvaTarget) {
+                    updateDoc(doc(database, "playeradmin", "counters", "counters", "viuvaCounter"), { counter: 99 , target: ''})
+                    
+                }
+            }
+            playActiveRevivalEffect();
+        } else {
+            console.log("nao tem martir no jogo né")
+            setKillAnouncementUpdate(`Não existe martir no jogo`)
+            setKillPanelIsOpen(true);
+
+        }
     }
     const revivePopup = () => {
         playRevivalCallEffect();
@@ -480,6 +638,7 @@ const Day = () => {
     const startNight = () => {
         clearNeedlessData();
         stopDayMusic();
+        stopBloodMoonMusic();
         stopDramaticDeathMusic();
         updateDoc(doc(database, "playeradmin", "blackout", user.email, 'blackout'), { blackout: 'sleep' })
         filliationChecks();
@@ -493,7 +652,6 @@ const Day = () => {
         allAcusations.forEach(obj => {
             const value = obj.acused
             judgementCounters[value] = (judgementCounters[value] || 0) + obj.value;
-            console.log(judgementCounters)
 
         });
         let mostRepeatedValue;
@@ -516,24 +674,48 @@ const Day = () => {
         updateDoc(doc(database, "playeradmin", "counters", "counters", "judgementKillCounter"), { counter: 60, target: ChosenTarget[0].playerName, votes: maxCounter})
         playJulgamentoSound();
         stopDayMusic();
+        stopBloodMoonMusic();
     }
     const killPlayer = () => {
         const target = alivePlayers.filter(player => { return player.playerName === playerKilling });
         updateDoc(doc(database, "playeradmin", "players", user.email, target[0].id), { life: "dead" })
+        if (target[0]?.role === 'golem') {
+            updateDoc(doc(database, "playeradmin", "counters", "counters", "invocadoraCounter"), { counter: 0, golemTarget: '' })
+        }
 
     }
     const playerjudgementAction = () => {
+        setDayTimerCounter(50)
         const positiveVotes = 0 + allAcusationsKillingVotes.filter((acusation) => acusation.vote === 'culpado').map((acuse) => acuse.value).reduce(function (a,b) { return a + b }, 0)
         const negativeVotes = 0 + allAcusationsKillingVotes.filter((acusation) => acusation.vote === 'inocente').map((acuse) => acuse.value).reduce(function (a, b) { return a + b }, 0)
+        let SpecialText = ''
         if (positiveVotes > negativeVotes) {
-            playmorteSound();
             const target = alivePlayers.filter(player => { return player.id === judgementTarget.target });
-            console.log(target)
+            if (target[0].filliation === 'coven') {
+                playWitchJuldgementSound()
+                checkCovenBloodMoon()
+
+            } else {
+                playmorteSound();
+                
+            }
             updateDoc(doc(database, "playeradmin", "players", user.email, target[0].id), { life: "dead" })
             setJudgementPanelIsOpen(false);
+
+            // Checks to see if the target is gritantes killer and if gritante is dead.
+            if (deadPlayers.some(dead => dead.role === 'gritante' ) && gritanteShriek.some(gritante => gritante.visitor === target[0].playerName)) {
+                const deadGritante = deadPlayers.filter(player => player.role === 'gritante');
+                const specialWinnersDB = collection(database, `playeradmin/playerStatuses/${user.email}/specialWinners/specialWinners`)
+                addDoc(specialWinnersDB, {
+                    winner: deadGritante[0].playerName
+                })
+                console.log('yes it worked')
+                SpecialText = 'e o Gritante também vence o jogo, com a morte de seu assassino!'
+            }
             if (target[0].role === 'peste') {
                 setTimeout(() => {
                     stopDayMusic();
+                    stopBloodMoonMusic()
                     playPesteDeathMusic();
                     setPlaguePanelIsOpen(true)
                 }, 5000)
@@ -541,7 +723,9 @@ const Day = () => {
                 if (target[0].role === 'bobo da corte') {
                     setTimeout(() => {
                         stopDayMusic();
+                        stopBloodMoonMusic()
                         playJesterDeathMusic();
+                        updateDoc(doc(database, "playeradmin", "players", user.email, target[0].id), { role: 'bobo da corte vitorioso', roleType: 'none' });
                         setJesterPanelIsOpen(true);
                     }, 5000)
                 } else if (target[0].role === 'ocultista') {
@@ -550,6 +734,7 @@ const Day = () => {
                         if (cultFollowers.length > 0) {
                             setJudgeCultFollowers(true);
                             stopDayMusic();
+                            stopBloodMoonMusic()
                             updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "cultKilling" })
                         } else {
                             setKillPanelIsOpen(true)
@@ -559,26 +744,54 @@ const Day = () => {
                     }, 5000)
                 }
                 else {
-                    setKillPanelIsOpen(true);
-                    setKillAnouncementUpdate(`O jogador ${target[0].playerName} foi julgado. Sua função era ${target[0].role}`)
-                    setTimeout(() => {
-                        playDramaticDeathMusic();
-                    }, 5000);
+
+                    if (target[0].filliation === 'coven') {
+                        const golem = alivePlayers.filter((player) => player.role === 'golem');
+                        const witches = alivePlayers.filter((player) => player.filliation === 'coven')
+                        console.log(golem)
+                        console.log(witches)
+                        console.log(witches.length === 0 && golem.length === 1)
+                        console.log(witches.length === 1 && golem.length === 1)
+                        if (witches.length === 1 && golem.length === 1) {
+                            setKillAnouncementUpdate(`O jogador ${target[0].playerName} foi julgado. Sua função era ${target[0].role}. Com a morte da última bruxa o Golem ${golem[0].playerName} também morre. ${SpecialText}`)
+                            updateDoc(doc(database, "playeradmin", "players", user.email, golem[0].id), { life: "dead" })
+                            
+                        } else {
+                            setKillAnouncementUpdate(`O jogador ${target[0].playerName} foi julgado. Sua função era ${target[0].role} ${SpecialText}`)
+                            
+                        }
+                        setKillPanelIsOpen(true);
+                        setTimeout(() => {
+                            playDramaticDeathMusic();
+                        }, 5000);
+                    } else {
+                        
+                        setKillPanelIsOpen(true);
+                        setKillAnouncementUpdate(`O jogador ${target[0].playerName} foi julgado. Sua função era ${target[0].role} ${SpecialText}`)
+                        setTimeout(() => {
+                            playDramaticDeathMusic();
+                        }, 5000);
+                    }
                 }
             }
             if (target[0].executorTarget === true ) {
                 const executor = alivePlayers.filter(player => player.role === 'executor');
                 if (executor.length > 0) {
-                    updateDoc(doc(database, "playeradmin", "players", user.email, executor[0].id), { role: 'executor vitorioso' });
+                    updateDoc(doc(database, "playeradmin", "players", user.email, executor[0].id), { role: 'executor vitorioso', roleType: "none" });
                     setNotifierNews('O Alvo do executor acabou de ser executado. Executor ganhou sua parte do jogo!')
                     setNotifierNewsIsOpen(true);
                 }
+            }
+            if (target[0].role === 'golem') {
+                updateDoc(doc(database, "playeradmin", "counters", "counters", "invocadoraCounter"), { counter: 0, golemTarget: '' })
+                
             }
         } else {
             setJudgementPanelIsOpen(false);
             playCancelEffectMusic();
             setTimeout(() => {
-                playDayMusic();
+            playDayMusic({volume: 0.25});
+
             }, 10000);
         }
         setPosiviteCounter(0);
@@ -592,6 +805,7 @@ const Day = () => {
             deleteDoc(theRef)
         }
         updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "dia" })
+        winConditionCheck()
     }
     const savePlayer = () => {
         setJudgementPanelIsOpen(false);
@@ -605,14 +819,15 @@ const Day = () => {
             deleteDoc(theRef)
         }   
         setTimeout(() => {
-            playDayMusic();
+            playDayMusic({volume: 0.25});
+
         }, 2000);
     }
     const dayPrompt = () => {
         setIsOpen(false);
         playRoosterSound();
         setTimeout(() => {
-            playDayMusic();
+            playDayMusic({volume: 0.25});
 
         }, 3000);
     }
@@ -632,24 +847,127 @@ const Day = () => {
         for (let i = 0; i < alivePlayers.length; i++){
             updateDoc(doc(database, "playeradmin", "players", "jspedrogarcia@gmail.com", alivePlayers[i].id), { action: "pending" } )
         }
+        initialDayMusicPlayer()
+    }
+    const playMusic = (song) => {
+        switch (song) {
+            case 'rooster':
+                playRoosterSound()
+                break;
+            case 'apocalipse':
+                playApocalipseMusic()
+                break;
+            case 'dayMusic':
+                playDayMusic({volume: 0.25});
+                break;
+            case 'stopdayMusic':
+                stopDayMusic()
+                break;
+        }
+    }
+    const initialDayMusicPlayer = () => {
         const horsemen = alivePlayers.filter(player => player.filliation === 'horsemen');
         if (horsemen.length > 0 && currentDay === 8) {
             setIsOpen(false);
-            playRoosterSound();
+            playMusic('rooster')
             setApocalipsePanelIsOpen(true)
             setTimeout(() => {
-                playApocalipseMusic();
+                playMusic('apocalipse')
                 
             }, 3000);
         } else {
             setIsOpen(false);
             setIs2ModalOpen(true);
             playRoosterSound();
+            playMusic('rooster')
+
             setTimeout(() => {
-                playDayMusic();
+                playMusic('dayMusic')
                 
             }, 3000);
         }
+    }
+    const winConditionCheck = () => {
+        var winners = []
+        let trigger = false
+        const horsemenCount = alivePlayers.filter((player) => player.filliation === 'horsemen');
+        const familyCount = alivePlayers.filter((player) => player.filliation === 'the family');
+        const covenCount = alivePlayers.filter((player) => player.filliation === 'coven');
+        const cultCount = alivePlayers.filter((player) => player.filliation === 'cult');
+        const townCount = alivePlayers.filter((player) => player.filliation === 'town');
+        const neutralCount = alivePlayers.filter((player) => player.filliation === 'neutral');
+        const flageloLive = alivePlayers.filter((player) => player.role === 'flagelo');
+        const boboDaCortemorto = deadPlayers.filter((player) => player.role === 'bobo da corte vitorioso')
+        if (boboDaCortemorto.length > 0) {
+            winners.push({ playerName: boboDaCortemorto[0].playerName, role: boboDaCortemorto[0].role })
+
+        }
+        const executorVitorioso = players.filter((player) => player.role === 'executor vitorioso')
+        if (executorVitorioso.length > 0) {
+            winners.push({ playerName: executorVitorioso[0].playerName, role: executorVitorioso[0].role })
+        }
+
+        if (flageloLive.length > 0 && flageloCounter > 3) {
+            winners.push({ playerName: flageloLive[0].playerName, role: flageloLive[0].role })
+            trigger = true
+            // PLAY CARTOMANTE MUSIC
+        }
+        // NeutralCheck
+        const commNeutralsOnly = neutralCount.filter((player) => player.roleType === 'comunicação')
+        const aggroNeutralsOnly = neutralCount.filter((player) => player.roleType === 'agressão')
+
+        if (aggroNeutralsOnly.length === 1) {
+            if (familyCount.length + townCount.length + cultCount.length + covenCount.length < 1) {
+                console.log("vitoria do neutro qualquer")
+                winners.push({ playerName: aggroNeutralsOnly[0].playerName, role: aggroNeutralsOnly[0].role })
+                trigger = true
+            }
+            if (aggroNeutralsOnly[0].role === 'piromaniaco' || aggroNeutralsOnly[0].role === 'assassino em serie' || (aggroNeutralsOnly[0].role === 'lobisomen' && (currentDay + 1) % 2 == 0)) {
+                if (familyCount.length + townCount.length + cultCount.length + covenCount.length < 2) {
+                    console.log("vitoria do neutro agressão")
+                    winners.push({ playerName: aggroNeutralsOnly[0].playerName, role: aggroNeutralsOnly[0].role })
+                    trigger = true
+                }
+            }
+        }
+
+        // Family Check
+        if (familyCount.length >= (townCount.length + commNeutralsOnly.length)  && aggroNeutralsOnly.length === 0) {
+            console.log("vitoria da familia")
+            const allFamily = players.filter((player) => player.filliation === 'the family')
+            for (let i = 0; i < allFamily.length; i++){
+                winners.push({ playerName: allFamily[i].playerName, role: allFamily[i].role })
+            }
+            trigger = true
+        }
+        if (covenCount.length >= (townCount.length + commNeutralsOnly.length)  && aggroNeutralsOnly.length === 0) {
+            console.log("vitoria do coven")
+            const allCoven = players.filter((player) => player.filliation === 'coven')
+            for (let i = 0; i < allCoven.length; i++){
+                winners.push({ playerName: allCoven[i].playerName, role: allCoven[i].role })
+            }
+            trigger = true
+        }
+
+        // Town Check
+        if (familyCount.length === 0 && cultCount.length === 0 && aggroNeutralsOnly.length === 0 && horsemenCount.length === 0) {
+            console.log("vitoria da cidade!")
+            const allTown = players.filter((player) => player.filliation === 'town')
+            for (let i = 0; i < allTown.length; i++){
+                winners.push({ playerName: allTown[i].playerName, role: allTown[i].role })
+            }
+            trigger = true
+        }
+        if (trigger) {
+            setWinnerPanelIsOpen(true)
+            for (let i = 0; i < winners.length; i++){
+                console.log(winners[i].playerName, winners[i].role)
+            }
+            setWinnersOfRound(winners)
+        }
+        // TIES - only alive players are players that are immune at night attacks, applies only to two players. 
+// add medico da peste too
+        
     }
     const adminPanel = () => {
         setAdminPanelIsOpen(true);
@@ -675,21 +993,61 @@ const Day = () => {
     }
     const finalizeReadings = () => {
         updateDoc(doc(database, "playeradmin", "blackout", user.email, 'blackout'), { blackout: 'false' })
+        setDayTimerCounter(150)
         setIs2ModalOpen(false)
         const cultLeader = alivePlayers.filter(player => player.filliation === 'cult');
         const cultFollowers = alivePlayers.filter(player => player.cultChoice === true);
         if (cultLeader.length > 0 && cultFollowers.length > 3) {
             stopDayMusic();
+            stopBloodMoonMusic()
             playOcultistVictoryEffect();
             setOpenOcultistModal(true)
         }
-
+        winConditionCheck()
         const filteredAnnouncements = announcements.filter(announcement => announcement.killedPlayerRole === 'ocultista');
 
         if (filteredAnnouncements.length > 0 && cultFollowers.length > 0) {
             setJudgeCultFollowers(true);
             stopDayMusic();
+            stopBloodMoonMusic()
             updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "cultKilling" })
+        }
+        checkCovenBloodMoon()
+        // Add a check to see if widow just started mourning
+        if (viuvaInfo[0].counter === 2) {
+            playWidowMourning()
+        }
+    }
+
+    const goToVictoryPage = () => {
+        stopBloodMoonMusic()
+        stopDayMusic()
+        navigateToNight('/victory')
+
+    }
+    const checkCovenBloodMoon = () => {
+        const allAliveWitches = alivePlayers.filter((player) => player.filliation === 'coven');
+
+        if (allAliveWitches.length === 1) {
+            // StartBloodmoonevent
+            if (bloodmoonCount === 99) {
+                setCovenBloodMoonEventIsOpen(true)
+                setCovenNews('O coven iniciou o feitiço de invocação da Lua de Sangue. Em 3 dias, será o fim dos tempos.')
+                updateDoc(doc(database, "playeradmin", "counters", "counters", "covenBloodmoonCounter"), { counter: 3 })
+
+            } else if (bloodmoonCount === 1) {
+                playWitchBloodMoonVictorySound()
+                setCovenNews('Essa noite foi a noite mais grotesca de todos os tempos...Vitoria do Coven')
+                setCovenBloodMoonEventIsOpen(true)
+                setWinnerPanelIsOpen(true)
+             }
+            else {
+                
+                updateDoc(doc(database, "playeradmin", "counters", "counters", "covenBloodmoonCounter"), { counter: bloodmoonCount - 1 })
+            }
+            stopDayMusic()
+            startBloodmoonMusic()
+
         }
     }
     const judgeTheCultFollowers = () => {
@@ -699,7 +1057,6 @@ const Day = () => {
         updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "dia" })
         if (positiveVotes > negativeVotes) {
             setJudgeCultResponse(`Os jogadores ${allCultFollowers.map((pl) => `${pl.playerName} com a função de ${pl.role}`).join(", ")} não foram perdoados e agora vão queimar com seu lider`)
-            console.log(allCultFollowers)
             setJudgeCultResultModal(true)
             for (let i = 0; i < allCultFollowers.length; i++){
                 updateDoc(doc(database, "playeradmin", "players", user.email, allCultFollowers[i].id), { life: "dead", cultChoice: false })
@@ -714,7 +1071,7 @@ const Day = () => {
 
             // dont kill the cult followers
         }
-        playDayMusic()
+        playDayMusic({volume: 0.25});
         for (let i = 0; i < allCultAcusationsKillingVotes.length; i++){
             const theRef = doc(database, `playeradmin/judgementAction/judgementCultKillingAction`, allCultAcusationsKillingVotes[i].id)
             deleteDoc(theRef)
@@ -725,13 +1082,17 @@ const Day = () => {
     const startPrefeitoJudgement = () => {
         setPrefeitoPanelisOpen(true);
         setJudgementPanelIsOpen(false);
+        for (let i = 0; i < allAcusationsKillingVotes.length; i++){
+            const theRef = doc(database, `playeradmin/judgementAction/judgementKillingAction`, allAcusationsKillingVotes[i].id)
+            deleteDoc(theRef)
+        }
     }
     const startJudgementAcusationPeriod = () => {
         playHandBellSoundEffect();
-        setJudmentCounter(120);
+        setJudmentCounter(90);
         setJudgementvoting(true);
         updateDoc(doc(database, "playeradmin", "playerStatuses", user.email, "gameState", "gameState", "gameState"), { gameState: "judgementVoting" })
-        updateDoc(doc(database, "playeradmin", "counters", "counters", "judgementCounter"), { counter: 60})
+        updateDoc(doc(database, "playeradmin", "counters", "counters", "judgementCounter"), { counter: 90})
     }
     const endJudgementAcusationPeriod = () => {
         setJudgementvoting(false)
@@ -746,16 +1107,17 @@ const Day = () => {
         <div className="day">
 
             <h3 className="page-title">
-                Dia {currentDay}
+                Dia {currentDay} - Timer: {dayTimerCounter}
             </h3>
 
             <div className="dayMain">
                 <Popup open={isOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Para iniciar o dia, clique abaixo! </div>
+                    <div className="headerz">Para iniciar o dia, clique abaixo! </div>
                     <div className="content">
 
                         <button className="button" onClick={currentDay === 1 ? dayPrompt : dayPrompt2}>Iniciar Dia</button>
+                        <button className="button" onClick={() => endGameCompletely()}>Encerrar o jogo</button>
                         <div className="contentRead">
 
                         </div>
@@ -764,7 +1126,7 @@ const Day = () => {
                 </Popup>
                 <Popup open={is2ModalOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Leia os Acontecimentos e siga a ordem! </div>
+                    <div className="headerz">Leia os Acontecimentos e siga a ordem! </div>
                         <div className="contentRead">
                             {announcements.length > 0 ? (
                                 <span className="modalNotifier fade-in-text1">
@@ -794,13 +1156,30 @@ const Day = () => {
                                                 <button className="smallButton" id="innerbomb" onClick={explodeBomb}><img src={bombSvg}></img></button>
                                     </span>
                                 ))}
+                                {alivePlayers.filter((player) => player.potionTime === true).map(player => (
+                                    <span className="statusPlace statusPlaceModal">
+                                                <p className="statusPlace-player">{player.playerName}</p>
+                                                <p className="statusPlace-estado">vai </p>
+                                                <p className="statusPlace-evento">beber uma poção!</p>
+                                                <button className="smallButton" id="innerbomb" onClick={explodePotion}><img src={potionSvg}></img></button>
+                                    </span>
+                                ))}
+                                    {gritanteShriek.map(shriek => (
+                                    <p>Grito: {shriek.visitor} visitou o Gritante essa noite.</p>
+                                ))}
+                                    {viuvaAnnouncement.map(viuva => (
+                                    <p>A Viuva reviveu o jogador {viuva.target} com o seu luto de 3 dias. Bem-vindo de volta!</p>
+                                ))}
+                                    {alivePlayers.filter(player => player.intoxicated === true).map(player => (
+                            <p>{player.playerName} está intoxicado e não pode conversar, será bloqueado a noite e morrerá se não for curado.</p>
+                                ))}
                                 {alivePlayers.filter(player => player.debuff !== '').map(player => (
-                            <p>{player.playerName} está Chantageado!</p>
+                            <p>{player.playerName} está {player.debuff}</p>
                         ))}
                                 {alivePlayers.filter(player => player.buff !== '').map(player => (
                             <p>{player.playerName} está Motivado!</p>
                                 ))}
-                                
+
                                 <span>
                                     {updatePanelInfo}
                                 </span>
@@ -824,12 +1203,15 @@ const Day = () => {
                         {alivePlayers.filter(player => player.debuff !== '').map(player => (
                             <p>{player.playerName} está Chantageado!</p>
                         ))}
+                        {alivePlayers.filter(player => player.intoxicated === true).map(player => (
+                            <p>{player.playerName} está intoxicado e não pode conversar, será bloqueado a noite e morrerá se não for curado.</p>
+                        ))}
                         {alivePlayers.filter(player => player.buff !== '').map(player => (
                             <p>{player.playerName} está Motivado!</p>
                         ))}
                         </div>
                 </div>
-                <div className="event-hiddenocurrence event">
+                {/* <div className="event-hiddenocurrence event">
                         <h4>
                         Visitas que ocorreram
                         </h4>
@@ -842,8 +1224,8 @@ const Day = () => {
                             </span>
                     ))}    
                     </div>
-                </div>
-                <div className="event-status event">
+                </div> */}
+                {/* <div className="event-status event">
                         <h4>
                         Informações Secretas
                         </h4>
@@ -871,29 +1253,29 @@ const Day = () => {
                             </span>
                         ))}
                     </div>
-                </div>
+                </div> */}
                 <div className="event-aliveplayers event">
                     <div className="alivePlayersTitle">
                         <h4>
                         Jogadores Vivos
                     </h4>
                            
-                        <div className="counterBox townies"> {alivePlayers.filter((player) => player.filliation === "town").length}</div>
+                        {/* <div className="counterBox townies"> {alivePlayers.filter((player) => player.filliation === "town").length}</div>
                     <div className="counterBox mafiaies"> {alivePlayers.filter((player) => player.filliation === "the family").length}</div>
                     <div className="counterBox covenies"> {alivePlayers.filter((player) => player.filliation === "coven").length}</div>
                     <div className="counterBox neutraies" > {alivePlayers.filter((player) => player.filliation === "neutral").length}</div>
                     <div className="counterBox horsies" > {alivePlayers.filter((player) => player.filliation === "horsemen").length}</div>
-                    <div className="counterBox cultisties" > {alivePlayers.filter((player) => player.filliation === "cult").length}</div>
+                    <div className="counterBox cultisties" > {alivePlayers.filter((player) => player.filliation === "cult").length}</div> */}
                     </div> 
                     <div className="large-container card-border scrollable">
                         {alivePlayers.map((player => (
                             <span className="alivePlayersConfig" key={player.key}>
-                                {player.playerName} - {player.filliation === 'town' && <p className="townies">{player.role} </p>} {player.role === 'martir' && <button className="miniButton trigger" onClick={revivePopup}><img src={wingSvg} alt="Wings" /></button>}
-                                {player.filliation === 'the family' && <p className="mafiaies">{player.role} </p>}
+                                {player.playerName}
+                                {/* {player.filliation === 'the family' && <p className="mafiaies">{player.role} </p>}
                                 {player.filliation === 'coven' && <p className="covenies">{player.role}</p>}
                                 {player.filliation === 'neutral' && <p className="neutraies">{player.role}</p>}
                                 {player.filliation === 'horsemen' && <p className="horsies">{player.role}</p>}
-                                {player.filliation === 'cult' && <p className="cultisties">{player.role}</p>}
+                                {player.filliation === 'cult' && <p className="cultisties">{player.role}</p>} */}
                             </span>
                         )))}
                         </div>
@@ -905,13 +1287,7 @@ const Day = () => {
                     <div className="large-container card-border scrollable">
                         {deadPlayers.map((player) => (
                             <span className="alivePlayersConfig" key={player.key + '3'}>
-                                {player.playerName} -
-                                {player.filliation === 'town' && <p className="townies">{player.role} </p>}
-                                {player.filliation === 'the family' && <p className="mafiaies">{player.role}</p>}
-                                {player.filliation === 'coven' && <p className="covenies">{player.role}</p>}
-                                {player.filliation === 'horsemen' && <p className="horsies">{player.role}</p>}
-                                {player.filliation === 'neutral' && <p className="neutraies">{player.role}</p>}
-                                {player.filliation === 'cult' && <p className="cultisties">{player.role}</p>}
+                                {player.playerName} - {player.role}
                             </span>
                                     ))}
                     </div>
@@ -920,6 +1296,7 @@ const Day = () => {
                     <div className="event-killplayer-inner">
                         <button type="button" onClick={startJudgementAcusationPeriod} className="button">Liberar Votação de Julgamento</button>
                         <button type="button" onClick={startNight} className="button">Começar Noite</button>
+                        <button className="button" onClick={revivePopup}>MARTIR REVIVER <img src={wingSvg} alt="Wings" /></button>
                         <button className="button" onClick={adminPanel}>Administrativo</button>
 
                     </div>
@@ -930,7 +1307,7 @@ const Day = () => {
             </div>
             <Popup open={judgementvoting} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">
+                    <div className="headerz">
                         Votos para julgamento
                     </div>
                     <div className="content judgementBox">
@@ -965,7 +1342,7 @@ const Day = () => {
             </Popup>
             <Popup open={prefeitoPanelisOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">
+                    <div className="headerz">
                         Selecione o Alvo do Prefeito
                     </div>
                     <div className="content judgementPrefeito">
@@ -984,7 +1361,7 @@ const Day = () => {
             </Popup>
             <Popup open={adminPanelIsOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Painel Administrativo, Use apenas para EMERGENCIAS </div>
+                    <div className="headerz">Painel Administrativo, Use apenas para EMERGENCIAS </div>
                     <div className="content">
                     <select name="playerName" id="playerName" value={playerKilling} onChange={(e) => setPlayerKilling(e.target.value)}>
                             <option value="" defaultValue disabled></option>
@@ -996,8 +1373,8 @@ const Day = () => {
                         <hr />
                     <button className="button" onClick={explodeMark}>Atirar na Marca</button>
                     <button className="button" onClick={explodeBomb}>Bomba do Palhaço</button>  
-                    <button className="button" onClick={endGameCompletely}>Encerrar Jogo</button>
-                    <button className="button" onClick={() => { setAdminPanelIsOpen(false) }}>Fechar Painel</button>
+                    <button className="button" onClick={() => endGameCompletely()}>Encerrar Jogo</button>
+                    <button className="button" onClick={() => { setAdminPanelIsOpen() }}>Fechar Painel</button>
                         
                     </div>
                     </div>
@@ -1005,7 +1382,7 @@ const Day = () => {
             </Popup>
             <Popup open={plaguePanelIsOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Peste morreu no julgamento, mate dois jogadores </div>
+                    <div className="headerz">Peste morreu no julgamento, mate dois jogadores </div>
                     <div className="content">
                     <select name="playerName" id="playerName" value={playerKilling} onChange={(e) => setPlayerKilling(e.target.value)}>
                             <option value="" defaultValue disabled hidden></option>
@@ -1027,7 +1404,7 @@ const Day = () => {
             </Popup>
             <Popup open={jesterPanelIsOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">O Bobo da Corte morreu! Mate 1 jogador </div>
+                    <div className="headerz">O Bobo da Corte morreu! Mate 1 jogador </div>
                     <div className="content">
                     <select name="playerName" id="playerName" value={playerKilling} onChange={(e) => setPlayerKilling(e.target.value)}>
                             <option value="" defaultValue disabled></option>
@@ -1043,7 +1420,7 @@ const Day = () => {
             </Popup>
             <Popup open={isReviveModalOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">O Mártir está se sacrificando por um jogador. Seleciona alguém morto: </div>
+                    <div className="headerz">O Mártir está se sacrificando por um jogador. Seleciona alguém morto: </div>
                     <div className="content">
                     <select name="playerName" id="playerName" value={playerKilling} onChange={(e) => setPlayerKilling(e.target.value)}>
                             <option value="" defaultValue disabled></option>
@@ -1059,7 +1436,7 @@ const Day = () => {
             </Popup>
             <Popup open={killPanelIsOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Anúncio de Morte </div>
+                    <div className="headerz">Anúncio de Morte </div>
                     <div className="contentDeathAnouncement">
                         <span>{killAnouncementUpdate}</span>
                     <button className="button" onClick={() => setKillPanelIsOpen(false)}>Ok!</button>
@@ -1070,9 +1447,9 @@ const Day = () => {
             </Popup>
             <Popup open={apocalipsePanelIsOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Vitória dos Cavaleiros do Apocalipse </div>
+                    <div className="headerz">Vitória dos Cavaleiros do Apocalipse </div>
                     <div className="contentDeathAnouncement">
-                    <button className="button" onClick={endGameCompletely}>Encerrar Jogo</button>
+                    <button className="button" onClick={() => endGameCompletely()}>Encerrar Jogo</button>
                         
                     </div>
                     </div>
@@ -1080,10 +1457,10 @@ const Day = () => {
             </Popup>
             <Popup open={openOcultistModal} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Vitória do Ocultista e seus seguidores </div>
+                    <div className="headerz">Vitória do Ocultista e seus seguidores </div>
                     <div className="contentDeathAnouncement">
                         O Ocultista {alivePlayers.filter(player => player.filliation === 'cult').map(pl => (pl.playerName))} iniciou o ritual de Invocação junto com seus seguidores: {alivePlayers.filter(player => player.cultChoice === true).map(pl => (<p key={pl.id}>{pl.playerName}</p> ))} Após se sacrificarem, foi invocado algo do além que os humanos não conseguiram conter, com isso o Fim da Humanidade.
-                    <button className="button" onClick={endGameCompletely}>Encerrar Jogo</button>
+                    <button className="button" onClick={() => endGameCompletely()}>Encerrar Jogo</button>
                         
                     </div>
                     </div>
@@ -1091,7 +1468,7 @@ const Day = () => {
             </Popup>
             <Popup open={judgeCultFollowers} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">O Ocultista morreu. Julgaremos seus seguidores </div>
+                    <div className="headerz">O Ocultista morreu. Julgaremos seus seguidores </div>
                     <div className="contentDeathAnouncement">
                         O Ocultista {deadPlayers.filter(player => player.filliation === 'cult').map(pl => (pl.playerName))} morreu essa noite. Seus seguidores: {alivePlayers.filter(player => player.cultChoice === true).map(pl => (<p key={pl.id}>{pl.playerName}</p>))} estão agora sem um lider e gostariam do perdão da cidade para que eles possam se livrar desse peso.
                         Votem para mata-los ou salva-los.
@@ -1110,7 +1487,7 @@ const Day = () => {
             </Popup>
             <Popup open={judgeCultResultModal} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Resultado:</div>
+                    <div className="headerz">Resultado:</div>
                     <div className="contentDeathAnouncement">
                     {judgeCultResponse}
                     <button className="button" onClick={() => setJudgeCultResultModal(false)}>Fechar</button>
@@ -1120,7 +1497,7 @@ const Day = () => {
             </Popup>
             <Popup open={judgementPanelIsOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">Painel de Julgamento</div>
+                    <div className="headerz">Painel de Julgamento</div>
                     <div className="content modalNotifier modalkill">
                         <p>Jogador Acusado: {judgementTarget?.targetName} </p>
                         <p>Com um total de {judgementTarget?.votes} votos</p>
@@ -1156,9 +1533,37 @@ const Day = () => {
             </Popup>
             <Popup open={notifierNewsIsOpen} modal closeOnDocumentClick={false}>
                     <div className="modalNight">
-                    <div className="header">{notifierNews}</div>
+                    <div className="headerz">{notifierNews}</div>
                     <div className="content">
                     <button className="button" onClick={() => setNotifierNewsIsOpen(false)}>Okay</button>
+                        
+                    </div>
+                    </div>
+                    
+            </Popup>
+            <Popup open={covenBloodMoonEventIsOpen} modal closeOnDocumentClick={false}>
+                    <div className="modalNight">
+                    <div className="headerz"></div>
+                    <div className="content">
+                    {covenNews}
+                    <button className="button" onClick={() => setCovenBloodMoonEventIsOpen(false)}>OKAY</button>
+                        
+                    </div>
+                    </div>
+                    
+            </Popup>
+            <Popup open={winnerPanelIsOpen} modal closeOnDocumentClick={false}>
+                    <div className="modalNight">
+                    <div className="headerz">Fim do Jogo, VENCEDORES:</div>
+                    <div className="content">
+                        {winnersofRound.map(winner => (
+                            <p>{winner.playerName} - {winner.role}</p>
+                        ))}
+                        {specialWinners.map(winner => (
+                            <p>{winner.playerName} - Gritante</p>
+                        ))}
+                    <button className="button" onClick={() => setWinnerPanelIsOpen(false)}>Fechar!</button>
+                    <button className="button" onClick={() => goToVictoryPage()}>Página de Vitória!</button>
                         
                     </div>
                     </div>

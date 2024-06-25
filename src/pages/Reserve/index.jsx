@@ -31,7 +31,6 @@ const Reserve = () => {
                     })
                 })
                 setDados(dados);
-            console.log(dados)
             for (let i = 0; i < dados.length; i++){
                 const a = onSnapshot(collection(database, `reserve/jspedrogarcia@gmail.com/reserve/${dados[i].id}/guests`), (snapshot) => {
                         snapshot.forEach((doc) => {
@@ -43,7 +42,6 @@ const Reserve = () => {
                             })
                         })
                         setDados(dados);
-                    console.log(dados)
                 }) 
             }
         }) 

@@ -1,14 +1,26 @@
 @import url('https://fonts.googleapis.com/css2?family=IM+Fell+Great+Primer+SC&display=swap');
 
+
+@font-face {
+  font-family: 'buffiedregular';
+  src: url('./assets/fonts/buffied/buffied-glqz-webfont.woff2') format('woff2'),
+       url('./assets/fonts/buffied/buffied-glqz-webfont.woff') format('woff');
+  font-weight: normal;
+  font-style: normal;
+
+}
+
 * {
     margin: 0;
     padding: 0;
     font-family: 'IM Fell Great Primer SC', serif;
     text-decoration: none;
 }
-
+.header h2, .header{
+  font-family: 'buffiedregular';
+}
 body{
-    background-color: #121212;
+    background-color: #2C1929;
     color: #FFF;
 }
 h1, h2, h3, h4{
@@ -45,7 +57,7 @@ h4{
         box-sizing: border-box;
 }
 .button:hover, .smallButton:hover, .miniButton:hover{
-    background-color: #f9fb7a;
+    background-color: #E2C391;
     cursor: pointer;
 }
 .smallButton:disabled{
@@ -188,6 +200,7 @@ input::-webkit-inner-spin-button {
     }
   }
   .popup-content {
+    animation: anvil 0.3s cubic-bezier(0.38, 0.1, 0.36, 0.9) forwards;
     -webkit-animation: anvil 0.3s cubic-bezier(0.38, 0.1, 0.36, 0.9) forwards;
   }
 

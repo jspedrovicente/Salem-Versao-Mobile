@@ -6,11 +6,11 @@ const Home = () => {
         <div className="home">
             <img src={logomarca} className='logoSizing' />
             <div className='button-container'>
-                <ButtonLink destination="/login" buttonText="Log In ADM"/>
+                <ButtonLink destination="/login" buttonText="Administrativo"/>
                 {/* <ButtonLink destination="/signup" buttonText="Cadastrar"/> */}
-                <ButtonLink destination="/playerMobile" buttonText="Entrar na partida"/>
-                <ButtonLink destination="/tutorial" buttonText="Conheça o Jogo"/>
-                <ButtonLink destination="/Reserve" buttonText="Reservar Data"/>
+                <ButtonLink destination="/playerMobile" buttonText="Jogar!"/>
+                 <ButtonLink destination="/tutorial" buttonText="Conheça o Jogo"/>
+                {/* <ButtonLink destination="/Reserve" buttonText="Reservar Data"/>  */}
             </div>
         </div>
     )

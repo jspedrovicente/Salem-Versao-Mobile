@@ -36,6 +36,8 @@ const Victory = () => {
                         key: doc.id,
                         playerName: doc.data().playerName,
                         victoryPoints: doc.data().victoryPoints,
+                        specialPoints: doc.data().specialPoints,
+                        characterPoints: doc.data().characterPoints,
                         role: doc.data().role,
                         filliation: doc.data().filliation,
                         life: doc.data().life,
@@ -147,10 +149,72 @@ const Victory = () => {
     }
     return (
         <div className="victoryPage" >
-                <h2>Página de Pontuação</h2>
+                <h2>Página de Pontuação/Vitoria</h2>
             <div className="pointPageMain">
+            <div>
+                        <table>
+                            <tr>
+                                <th>
+                                    Nome
+                                </th>
+                                <th>
+                                    Filiação
+                                </th>
+                                <th>
+                                    Função
+                                </th>
+                                <th>
+                                    Status
+                                </th>
+                                <th>
+                                    P. V
+                                </th>
+                                <th>
+                                    P. P
+                                </th>
+                                <th>
+                                    P. E
+                                </th>
+                            </tr>
+                                
+                            {players.map((player) => (
+                    
+                                    <tr>
+                                        <td>
+                                        {player.playerName}
+                                        </td>
+                                        <td>
+                                        {player.filliation === 'town' ? 'Cidade'
+                                            : player.filliation === 'the family' ? 'Familia'
+                                            : player.filliation === 'coven' ? 'Coven'
+                                            : player.filliation === 'horsemen' ? 'Cavaleiros'
+                                            : player.filliation === 'cult' ? 'Culto' 
+                                            : player.filliation === 'neutral' ? 'Neutro' : ''
+                                        }
+                                        </td>
+                                        <td>
+                                        {player.role}
+                                        </td>
+                                        <td>
+                            {player.life === 'alive' ? 'Vivo' : 'Morto'}
+                                        </td>
+                                        <td>
+                            {player.victoryPoints}
+                                        </td>
+                                        <td>
+                            {player.characterPoints}
+                                        </td>
+                                        <td>
+                            {player.specialPoints}
+                                        </td>
+                        </tr>
+                            ))}
+                                
+                        </table>
+                            
 
-            <div className="small-container bordered">
+            </div>
+            <div className="large-container bordered">
                 <h4>Pontos por Vitôria!</h4>
                 <select name="" id="" value={victorFill} onChange={(e) => setVictorFill(e.target.value)}>
                     <option value="" disabled>Selecione</option>
@@ -176,54 +240,7 @@ const Victory = () => {
                 <button className="button" onClick={(e) => filiationPoints()}>Filiação!</button>
                 
             </div>
-            <div>
-                        <table>
-                            <tr>
-                                <th>
-                                    Nome
-                                </th>
-                                <th>
-                                    Filiação
-                                </th>
-                                <th>
-                                    Função
-                                </th>
-                                <th>
-                                    Status
-                                </th>
-                                <th>
-                                    Pontuação
-                                </th>
-                            </tr>
-                                
-                            {players.map((player) => (
-                    
-                                    <tr>
-                                        <td>
-                        {player.playerName}
-                                        </td>
-                                        <td>
-                                        {player.filliation === 'town' ? 'Cidade' : player.filliation === 'mafia' ? 'Mafia' : player.filliation === 'coven' ? 'Coven' : player.filliation === 'horsemen' ? 'Cavaleiros' : ''}
-                                        </td>
-                                        <td>
-                        {player.role}
 
-                                        </td>
-                                        <td>
-                            {player.life === 'alive' ? 'Vivo' : 'Morto'}
-
-                                        </td>
-                                        <td>
-                            {player.victoryPoints}
-
-                                        </td>
-                        </tr>
-                            ))}
-                                
-                        </table>
-                            
-
-                </div>
             </div>
                 
         </div>

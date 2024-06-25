@@ -95,10 +95,12 @@
 
 .intButton{
     margin: 0px 5px;
-    background-color: #B0B159;
+    background-color: #E2C391;
     border-radius: 8px;
     padding: 8px;
     margin-bottom: 10px;
+    border-color: transparent;
+    animation: all 2s linear;
 }
 .waitingForMatch{
     display: flex;
@@ -138,7 +140,9 @@
     width: 100%;
     min-height: 10vh;
     border-radius: 10px; 
+    ;
 }
+
 .playerInfoBox, .mafiaInfoBox, .playerNoticeBox, .chatMortosBox, .piromaniacoInfoBox, .evilChatBox{
     display: flex;
     justify-content: center;
@@ -230,6 +234,12 @@
   flex-direction: column;
   justify-content: space-evenly;
 }
+.botaoAtualmenteSelecionado{
+  animation: mainscreen 2s linear;
+  background-color: #c62800;
+}
+
+#botalAtualmenteSelecionado::anima
 .listing-inner-modal{
   padding: 0 5px;
   max-height: 100px;
@@ -266,3 +276,13 @@
   .fadeMe.none {
     display:none
   }
+
+  
+  @keyframes mainscreen {
+    0% {
+        background-color: #E2C391;
+    }
+    100% {
+        background-color: #c62800;
+    }
+}
